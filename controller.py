@@ -2,6 +2,9 @@
 
 import asyncio
 from aiohttp import web
+from base64 import b64encode
+from copy import deepcopy
+import json
 import jsonpatch
 from kapitan.refs.base import RefController, Revealer
 import logging
@@ -21,28 +24,64 @@ async def metrics_handler(request):
 @ROUTES.post('/mutate/{resource}')
 async def mutate_resource_handler(request):
     resource = request.match_info.get('resource', None)
+    # XXX is this needed at all?
     if resource is None:
         return web.Response(status=500, reason='Resource not set')
 
     try:
         req_json = await request.json()
-        # TODO get annotations and check 'kapicorp.com/kapitan-controller'
-        req_updated = req_json.copy()
 
-        # TODO remove when reveal works
-        temp_ref = ("?{base64:eyJkYXRhIjogImNtVm1JREVnWkdGMFlRPT0iLCAiZW5jb2"
-                "RpbmciOiAib3JpZ2luYWwiLCAidHlwZSI6ICJiYXNlNjQifQ==:embedded}"
-        )
-        req_updated["temp_ref"] = temp_ref # TODO remove when reveal works
+        # check for annotation 'kapicorp.com/admiral: kapitan-embed-refs'
+        annotated_refs = False
+        try:
+            annotations = req_json["request"]["object"]["metadata"]["annotations"]
+            if annotations["kapicorp.com/admiral"] == "kapitan-embed-refs":
+                annotated_refs: True
 
-        reveal_req_func = lambda: kapitan_reveal_json(req_updated)
-        req_revealed = await run_blocking(reveal_req_func)
-        patch = jsonpatch.make_patch(req_json, req_revealed)
-        return web.json_response(patch.patch)
+        # not annotated, default allow
+        except KeyError:
+            # TODO log success, default allow
+            response = make_response([], allow=True, message="")
+
+        req_copy = deepcopy(req_json)
+
+        try:
+            reveal_req_func = lambda: kapitan_reveal_json(req_copy)
+            req_revealed = await run_blocking(reveal_req_func)
+            patch = make_patch(req_json, req_revealed)
+            response = make_response(patch, allow=True, message="")
+
+            return web.json_response(response)
+
+        except Exception as e:
+            # TODO log exception error
+            response = make_response([], allow=False, message="Kapitan Reveal Failed")
+
+            return web.json_response(response)
+
     except json.decode.JSONDecoderError:
         return web.Response(status=500, reason='Request not JSON')
 
     return web.Response(status=500, reason='Unknown error')
+
+
+def make_patch(src_json, dst_json):
+    p = jsonpatch.make_patch(src_json, dst_json)
+    return p.patch
+
+
+def make_response(patch, allow=False, message=""):
+    patch_json = json.dumps(patch)
+    b64_patch = b64encode(patch_json.encode()).decode()
+    return {
+            "response": {
+                "allowed": allow,
+                "status": {"message": message},
+                "patchType": "JSONPatch",
+                "patch": b64_patch
+                }
+            }
+
 
 async def run_blocking(func):
     loop = asyncio.get_running_loop()

@@ -1,0 +1,22 @@
+{
+   "request":{
+      "object":{
+         "metadata":{
+            "annotations":{
+               "kapicorp.com/admiral":"kapitan-embed-refs"
+            }
+         },
+         "spec":{
+             "containers":[
+                 {
+                     "name": "test/image",
+                     "args":[
+                         "--embedded-ref",
+                         "?{base64:eyJkYXRhIjogImNtVm1JREVnWkdGMFlRPT0iLCAiZW5jb2RpbmciOiAib3JpZ2luYWwiLCAidHlwZSI6ICJiYXNlNjQifQ==:embedded}"
+                     ]
+                 }
+             ]
+         }
+      }
+   }
+}
