@@ -12,15 +12,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 ROUTES = web.RouteTableDef()
-ROUTES_METRICS = web.RouteTableDef()
 
 REF_CONTROLLER = RefController('/tmp', embed_refs=True)
 REVEALER = Revealer(REF_CONTROLLER)
-
-
-@ROUTES_METRICS.get('/metrics')
-async def metrics_handler(request):
-    return web.Response(text="Metrics go here")
 
 
 @ROUTES.post('/mutate/{resource}')
@@ -86,29 +80,7 @@ def kapitan_reveal_json(json_doc):
     return REVEALER.reveal_obj(json_doc)
 
 
-async def start_site(app, app_runners, address="0.0.0.0", port=8080):
-    runner = web.AppRunner(app)
-    app_runners.append(runner)
-    await runner.setup()
-    site = web.TCPSite(runner, address, port)
-    await site.start()
-
-
 if __name__ == '__main__':
-    app_runners = []
     app = web.Application()
     app.add_routes(ROUTES)
-    app_metrics = web.Application()
-    app_metrics.add_routes(ROUTES_METRICS)
-
-    loop = asyncio.get_event_loop()
-    loop.create_task(start_site(app, app_runners))
-    loop.create_task(start_site(app_metrics, app_runners, port=9095))
-
-    try:
-        loop.run_forever()
-    except:
-        pass
-    finally:
-        for runner in app_runners:
-            loop.run_until_complete(runner.cleanup())
+    web.run_app(app)
