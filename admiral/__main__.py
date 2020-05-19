@@ -36,7 +36,7 @@ async def mutate_resource_handler(request):
                 reveal_req_func = lambda: kapitan_reveal_json(req_copy)
                 req_revealed = await run_blocking(reveal_req_func)
                 patch = make_patch(req_json, req_revealed)
-                response = make_response(patch, allow=True, message="")
+                response = make_response(patch, allow=True)
 
             except Exception as e:
                 # TODO log exception error
@@ -45,7 +45,7 @@ async def mutate_resource_handler(request):
         else:
             # not annotated, default allow
             # TODO log success
-            response = make_response([], allow=True, message="")
+            response = make_response([], allow=True)
 
     except json.decode.JSONDecoderError:
         return web.Response(status=500, reason='Request not JSON')
@@ -84,20 +84,23 @@ def kapitan_reveal_json(json_doc):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Admiral - Kapitan Admission Controller')
-    parser.add_argument('--verbose', action="store_true", default=False)
-    parser.add_argument('--port', action="store", type=int, default=8080)
-    parser.add_argument('--cert-file', action="store", default=None)
-    parser.add_argument('--key-file', action="store", default=None)
-    parser.add_argument('--metrics-port', action="store", type=int, default=9095)
+    parser.add_argument('--verbose', action='store_true', default=False)
+    parser.add_argument('--port', action='store', type=int, default=8080)
+    parser.add_argument('--host', action='store', default='0.0.0.0')
+    parser.add_argument('--cert-file', action='store', default=None)
+    parser.add_argument('--key-file', action='store', default=None)
+    parser.add_argument('--ca-file', action='store', default=None)
+    parser.add_argument('--ca-path', action='store', default=None)
+    parser.add_argument('--metrics-port', action='store', type=int, default=9095)
     args = parser.parse_args()
-
 
     app = web.Application()
     app.add_routes(ROUTES)
 
+    ssl_ctx = None
     if None not in (args.key_file, args.cert_file):
-        ssl_ctx = ssl.create_default_context() # XXX allow custom CA?
+        ssl_ctx = ssl.create_default_context(cafile=args.ca_file,
+                                             capath=args.ca_path)
         ssl_ctx.load_cert_chain(args.cert_file, args.key_file)
-        web.run_app(app, ssl_context=ssl_ctx)
-    else:
-        web.run_app(app)
+
+    web.run_app(app, host=args.host, port=args.port, ssl_context=ssl_ctx)
