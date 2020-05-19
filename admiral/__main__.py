@@ -9,6 +9,7 @@ import json
 import jsonpatch
 from kapitan.refs.base import RefController, Revealer
 import logging
+from prometheus_client import start_http_server as prom_http_server, Counter
 import ssl
 
 logging.basicConfig(level=logging.INFO)
@@ -18,9 +19,16 @@ ROUTES = web.RouteTableDef()
 REF_CONTROLLER = RefController('/tmp', embed_refs=True)
 REVEALER = Revealer(REF_CONTROLLER)
 
+ADMIRAL_COUNTER = Counter('admiral_requests', 'Admiral requests')
+ADMIRAL_FAILED_COUNTER = Counter('admiral_requests_failed', 'Admiral failed requests')
+REVEAL_COUNTER = Counter('kapitan_reveal_requests', 'Kapitan reveal ref requests')
+REVEAL_FAILED_COUNTER = Counter('kapitan_reveal_requests_failed',
+                                'Kapitan reveal ref failed requests ')
+
 
 @ROUTES.post('/mutate/{resource}')
 async def mutate_resource_handler(request):
+    ADMIRAL_COUNTER.inc()
     try:
         req_json = await request.json()
         # default to 500 unknown error
@@ -37,17 +45,20 @@ async def mutate_resource_handler(request):
                 req_revealed = await run_blocking(reveal_req_func)
                 patch = make_patch(req_json, req_revealed)
                 response = make_response(patch, allow=True)
+                REVEAL_COUNTER.inc()
 
             except Exception as e:
                 # TODO log exception error
                 response = make_response([], allow=False,
                                          message="Kapitan Reveal Failed")
+                REVEAL_FAILED_COUNTER.inc()
         else:
             # not annotated, default allow
             # TODO log success
             response = make_response([], allow=True)
 
-    except json.decode.JSONDecoderError:
+    except json.decoder.JSONDecodeError:
+        ADMIRAL_FAILED_COUNTER.inc()
         return web.Response(status=500, reason='Request not JSON')
 
     return response
@@ -92,6 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('--ca-file', action='store', default=None)
     parser.add_argument('--ca-path', action='store', default=None)
     parser.add_argument('--metrics-port', action='store', type=int, default=9095)
+    parser.add_argument('--metrics-host', action='store', default='0.0.0.0')
     args = parser.parse_args()
 
     app = web.Application()
@@ -103,4 +115,5 @@ if __name__ == '__main__':
                                              capath=args.ca_path)
         ssl_ctx.load_cert_chain(args.cert_file, args.key_file)
 
+    prom_http_server(args.metrics_port, args.metrics_host)
     web.run_app(app, host=args.host, port=args.port, ssl_context=ssl_ctx)
