@@ -3,7 +3,7 @@
       "object":{
          "metadata":{
             "annotations":{
-               "kapicorp.com/admiral":"kapitan-reveal-refs"
+               "kapicorp.com/almirant":"kapitan-reveal-refs"
             }
          },
          "spec":{
