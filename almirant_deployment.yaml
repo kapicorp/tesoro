@@ -1,0 +1,30 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: almirant-admission-controller
+  labels:
+    app: almirant-admission-controller
+spec:
+  selector:
+    matchLabels:
+      app: almirant-admission-controller
+  template:
+    metadata:
+      labels:
+        app: almirant-admission-controller
+    spec:
+      containers:
+        - name: almirant
+          image: ramaro/almirant
+          ports:
+            - containerPort: 8443
+              name: almirant-api
+            - containerPort: 9095
+              name: metrics
+          args:
+            - --port=8443
+            - --cert-file=/certs/cert.pem
+            - --key-file=/certs/priv.key
+
+

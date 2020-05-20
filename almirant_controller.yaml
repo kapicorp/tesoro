@@ -1,0 +1,23 @@
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: almirant-admission-controller
+webhooks:
+  - name: almirant-admission-controller.almirant.svc
+    clientConfig:
+      service:
+        name: almirant-admission-controller
+        namespace: almirant
+        path: "/mutate"
+      caBundle: ${CA_PEM_B64}
+    rules:
+      - operations:
+          - CREATE
+          - UPDATE
+        apiGroups:
+          - ""
+        resources:
+          - "*"
+        apiVersions:
+          - "*"
