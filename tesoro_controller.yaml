@@ -2,13 +2,13 @@
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: almirant-admission-controller
+  name: tesoro-admission-controller
 webhooks:
-  - name: almirant-admission-controller.almirant.svc
+  - name: tesoro-admission-controller.tesoro.svc
     clientConfig:
       service:
-        name: almirant-admission-controller
-        namespace: almirant
+        name: tesoro-admission-controller
+        namespace: tesoro
         path: "/mutate"
       caBundle: ${CA_PEM_B64}
     rules:

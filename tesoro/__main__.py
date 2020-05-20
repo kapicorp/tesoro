@@ -19,8 +19,8 @@ ROUTES = web.RouteTableDef()
 REF_CONTROLLER = RefController('/tmp', embed_refs=True)
 REVEALER = Revealer(REF_CONTROLLER)
 
-ALMIRANT_COUNTER = Counter('almirant_requests', 'Almirant requests')
-ALMIRANT_FAILED_COUNTER = Counter('almirant_requests_failed', 'Almirant failed requests')
+TESORO_COUNTER = Counter('tesoro_requests', 'Tesoro requests')
+TESORO_FAILED_COUNTER = Counter('tesoro_requests_failed', 'Tesoro failed requests')
 REVEAL_COUNTER = Counter('kapitan_reveal_requests', 'Kapitan reveal ref requests')
 REVEAL_FAILED_COUNTER = Counter('kapitan_reveal_requests_failed',
                                 'Kapitan reveal ref failed requests ')
@@ -28,15 +28,15 @@ REVEAL_FAILED_COUNTER = Counter('kapitan_reveal_requests_failed',
 
 @ROUTES.post('/mutate/{resource}')
 async def mutate_resource_handler(request):
-    ALMIRANT_COUNTER.inc()
+    TESORO_COUNTER.inc()
     try:
         req_json = await request.json()
         # default to 500 unknown error
         response = web.Response(status=500, reason='Unknown error')
 
-        # check for 'kapicorp.com/almirant' annotations
+        # check for 'kapicorp.com/tesoro' annotations
         annotations = req_json["request"]["object"]["metadata"]["annotations"]
-        annotation = annotations.get("kapicorp.com/almirant", None)
+        annotation = annotations.get("kapicorp.com/tesoro", None)
 
         if annotation == "kapitan-reveal-refs":
             try:
@@ -58,7 +58,7 @@ async def mutate_resource_handler(request):
             response = make_response([], allow=True)
 
     except json.decoder.JSONDecodeError:
-        ALMIRANT_FAILED_COUNTER.inc()
+        TESORO_FAILED_COUNTER.inc()
         return web.Response(status=500, reason='Request not JSON')
 
     return response
@@ -94,7 +94,7 @@ def kapitan_reveal_json(json_doc):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Almirant - Kapitan Admission Controller')
+    parser = argparse.ArgumentParser(description='Tesoro - Kapitan Admission Controller')
     parser.add_argument('--verbose', action='store_true', default=False)
     parser.add_argument('--port', action='store', type=int, default=8080)
     parser.add_argument('--host', action='store', default='0.0.0.0')
