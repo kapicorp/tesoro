@@ -111,7 +111,8 @@ if __name__ == '__main__':
 
     ssl_ctx = None
     if None not in (args.key_file, args.cert_file):
-        ssl_ctx = ssl.create_default_context(cafile=args.ca_file,
+        ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH,
+                                             cafile=args.ca_file,
                                              capath=args.ca_path)
         ssl_ctx.load_cert_chain(args.cert_file, args.key_file)
 
