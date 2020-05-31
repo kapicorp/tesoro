@@ -2,7 +2,7 @@
 [Kapitan](https://kapitan.dev) Secrets Webhook for Kubernetes
 
 
-Tesoro allows you to seamleslsly apply Kapitan [secrets refs](https://kapitan.dev/secrets/) in compiled Kubernetes manifests. As it runs in the cluster,
+Tesoro allows you to seamleslsly apply Kapitan [secret refs](https://kapitan.dev/secrets/) in compiled Kubernetes manifests. As it runs in the cluster,
 it will be able to reveal embedded kapitan secret refs in manifests when applied.
 
 ## Example
