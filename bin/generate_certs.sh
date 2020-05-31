@@ -1,3 +1,8 @@
+#!/bin/bash
+set -e
+
+mkdir certs; cd certs
+
 openssl genrsa -out rootCA.key 4096
 openssl req -x509 -new -nodes -key rootCA.key -subj "/CN=CA-tesoro-admission-controller.tesoro.svc" -sha256 -days 1024 -out rootCA.crt
 openssl genrsa -out priv.key 2048

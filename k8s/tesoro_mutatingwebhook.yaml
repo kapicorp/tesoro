@@ -10,6 +10,7 @@ webhooks:
         name: tesoro-admission-controller
         namespace: tesoro
         path: "/mutate"
+      # XXX Change to your base64'd certs/rootCA.crt file
       caBundle: |
         LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZQakNDQXlhZ0F3SUJBZ0lKQUxQdlV2a0Ns
         TG8xTUEwR0NTcUdTSWIzRFFFQkN3VUFNRFF4TWpBd0JnTlYKQkFNTUtVTkJMWFJsYzI5eWJ5MWha
