@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tesoro-admission-controller
+  labels:
+    app: tesoro-admission-controller
+spec:
+  selector:
+    matchLabels:
+      app: tesoro-admission-controller
+  template:
+    metadata:
+      labels:
+        app: tesoro-admission-controller
+    spec:
+      serviceAccountName: tesoro-admission-controller-sa
+      containers:
+        - name: tesoro
+          image: ramaro/tesoro
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8443
+              name: tesoro-api
+            - containerPort: 9095
+              name: metrics
+          args:
+            - --port=8443
+            - --cert-file=/certs/cert.pem
+            - --key-file=/certs/priv.key
+          volumeMounts:
+            - name: tesoro-secrets
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: tesoro-secrets
+          secret:
+            secretName: tesoro-admission-controller-secret
+
+
+

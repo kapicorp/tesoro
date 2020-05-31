@@ -1,0 +1,66 @@
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: tesoro-admission-controller
+webhooks:
+  - name: tesoro-admission-controller.tesoro.svc
+    failurePolicy: Fail
+    clientConfig:
+      service:
+        name: tesoro-admission-controller
+        namespace: tesoro
+        path: "/mutate"
+      caBundle: |
+        LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZQakNDQXlhZ0F3SUJBZ0lKQUxQdlV2a0Ns
+        TG8xTUEwR0NTcUdTSWIzRFFFQkN3VUFNRFF4TWpBd0JnTlYKQkFNTUtVTkJMWFJsYzI5eWJ5MWha
+        RzFwYzNOcGIyNHRZMjl1ZEhKdmJHeGxjaTUwWlhOdmNtOHVjM1pqTUI0WApEVEl3TURVeU1URTBO
+        VEkxTWxvWERUSXpNRE14TVRFME5USTFNbG93TkRFeU1EQUdBMVVFQXd3cFEwRXRkR1Z6CmIzSnZM
+        V0ZrYldsemMybHZiaTFqYjI1MGNtOXNiR1Z5TG5SbGMyOXlieTV6ZG1Nd2dnSWlNQTBHQ1NxR1NJ
+        YjMKRFFFQkFRVUFBNElDRHdBd2dnSUtBb0lDQVFDNVJJS29JdCtZT2FVTVVISlBOUk5QOGNjWnNv
+        MHp2T29VUE9OZwpLdFo1Q1BkS3cvMkNCUlVhQjFZRERXY2xQUHgyOUp3UEdJbEFtWWh3ZG91M3lJ
+        NGNRZHcxT3hHWWR6bGpOdXlqCjlyUHhvaXdJSDVENmd3UTJDU2wra0JJbzdZblpwVlVyK1gxWUNZ
+        Z0VmZVU3M3gyZWJGK3p3K043ejJYeTlXbjQKYU8yclhxZ0lRTGFkeVlhUE03Rkd1ZnFhUWt2dDY1
+        VW1nbUx2RXl0K3R4YTVnbkxtbDROZVVxSjMyMnUwQ3NocwpDc2htRFVscUFQLzVpbENwL0hSVDgr
+        ZU5WRnRKcm8vQm5qTXNXZnFJZGxkQXI3dS96THdVaVdoZnBBZEkwZk1uClJQYkZpRk1SU1FFR1l5
+        c0MvdnV2YVlJR2g3aFBKY01YYTRiaG5UMlhXUTBGRU9FUWJaZlJxK3BSbjZ6ZHYrUm8KbHdDaUVM
+        ZUlQVnAwc0VMaTNwTXArMWhydlJkcEhHRDdaemgzT25IRENNY1pXVEtIQW0wc0c0QVhsSUYwQTVN
+        Ngpmelh1bm5TNHdGK2s3dmFRbmR1Z1pqVTVSaDh6NVBiM2FGZ3ErVzYweVRxYkx5TTJreHFBUm80
+        TEtXT082azVoCjIxQWZhNmpjVEZYb0I3Z281Kzc4ei9zdXZvNUNuQXdyTjdXQWE5YVEycDRvd0E1
+        cFVUek1oempqclVUYXhZMFYKNmNVUnZFS1dic09sSWRwOHljQlVVeG5ZSlhJSWIrNDJST1F4cXo1
+        UzRubG1oMWlpU1ZvYlExcDh3RDNyZXpoMApocWJNS1ZDbVQ4b2ExOHhWWlhBcWJsZGFNQVc4ZW16
+        Q2x3Unl2elF2Rm1uY0JGclNFY3d5a2x4QnBwZklRTnZDCnVncEIzd0lEQVFBQm8xTXdVVEFkQmdO
+        VkhRNEVGZ1FVcUk4TzN5Rk8xYXVKSkVJbHd3NlM2dCtqb3JFd0h3WUQKVlIwakJCZ3dGb0FVcUk4
+        TzN5Rk8xYXVKSkVJbHd3NlM2dCtqb3JFd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBTgpCZ2txaGtp
+        Rzl3MEJBUXNGQUFPQ0FnRUFqeFdYZVF3d05IamhvQTZCRzhBTFpXN3BEZE5RTWFyd05MOE9CK3l0
+        ClNVYXpxdEZBbjNvbm9vbzlySXE1bEN6REN1OVhuZU1JMlBVVHN1dktUeVJIZE5IWFUyU2RrZmlK
+        QXhrTHhuNjAKNkZBVWh2b0tyWUoxNE53L2p6d1VSNUcrSjU2NEVvc3FaeGI4MEdYMGkxSHlVZTdD
+        Y2UwRFpGUUlmaWswSHc2QwpadnVLbnN4UFdOTnZnbVdqSGZwbWJ1djJNbThsYmN1VldBNlN5ekQr
+        TG1DUXBGNWJJOW8ycm5HQ2tZWTlwTlRsClEzYU5IZ1U5Z3FXdnV2Qkpia2UxaWttdHF2Z1RKTXFu
+        NUIzMDBDUzVlRldqVVdjODhHWmRLbkovQm9YT3g3RWQKK0JoTFkvUTRLNUdVaVFhSjVhTVlCWnpZ
+        SmhIR2R1U3VFdDJVMEFWOWxWSysvSTJtR25Rb0xKV0tDMWQ2Q0x2MwpLaWVZRXFURWV4Y09XODUy
+        aVVRQXkrOWdLcndXR0FaWXYxbmk0TXlHK1RORG9rNzJSQTVJa0FHYWRuM3k0SHNlCktMa1NteUF5
+        TUVWZzJWL2FrNU1HSVFZa1pWc1RVZTVUV0F6dnlQbndITk96MGNzaTJ1RE1xQi9NVlJCNFQxK1kK
+        QURHZnptajBGK2ZMRkNEeC9Kb3YwYjVCVTBVbHVtZDhCZ3F2bFNsdEpJd1E4TjJBdzgzWE5Ubm00
+        Rnc5eDUzWQpQekIvQWFydVVzbFZpVVVRRWozTzBEc2FpTHd5bHlqd0dBb0Z6MkxuMWorSmRSNkU2
+        alovMFRNMWFtaGdYODhBCm1uTUhjd3lCcEJMU1NtMHYxbmxvNnhHQXN6alYrcWY4MXhlYXdudy83
+        TE1tb2NmS0pHTlZOWm9OZEw2WEcvUGsKRXlnPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    rules:
+      - operations:
+          - CREATE
+          - UPDATE
+        apiGroups:
+          - ""
+        resources:
+          - "*"
+        apiVersions:
+          - "*"
+      - operations:
+          - CREATE
+          - UPDATE
+        apiGroups:
+          - "apps"
+        resources:
+          - "deployments"
+        apiVersions:
+          - "*"

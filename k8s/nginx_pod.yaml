@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  annotations:
+    kapicorp.com/tesoro: kapitan-reveal-refs
+spec:
+    serviceAccountName: tesoro-admission-controller-sa
+    containers:
+    - name: nginx
+      image: nginx:1.14.2
+      ports:
+      - containerPort: 80
+      env:
+        - name: KAP_SECRET
+          value: "?{base64:eyJkYXRhIjogImNtVm1JREVnWkdGMFlRPT0iLCAiZW5jb2RpbmciOiAib3JpZ2luYWwiLCAidHlwZSI6ICJiYXNlNjQifQQ==:embedded}"
+
