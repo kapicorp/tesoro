@@ -28,7 +28,7 @@ stringData:
   secret_sauce: ?{gkms:my/secret1:deadbeef}
 ```
 
-All you have to do is compile with embedded refs:
+All you have to do is compile refs in [embedded format](https://kapitan.dev/secrets/#5-compile-refs-in-embedded-format):
 ```shell
 $ kapitan compile --embed-refs
 ```
