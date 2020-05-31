@@ -102,7 +102,7 @@ tesoro-admission-controller-584b9d87c6-p69bx   1/1     Running   0          1m
 
 And finally apply the MutatingWebhookConfiguration:
 ```shell
-$ kubectl -n tesoro apply -f k8s/tesoro_deployment.yaml
+$ kubectl -n tesoro apply -f k8s/tesoro_mutatingwebhook.yaml
 ```
 
 #### 5 - Try a Kubernetes Manifest with Secret Refs
