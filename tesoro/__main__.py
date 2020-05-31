@@ -10,10 +10,17 @@ import jsonpatch
 from kapitan.refs.base import RefController, Revealer
 import logging
 from prometheus_client import start_http_server as prom_http_server, Counter
-from pprint import pprint
 import ssl
 
-logging.basicConfig(level=logging.DEBUG)
+
+def setup_logging(level=logging.INFO):
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
+                        level=level,
+                        datefmt='%Y-%m-%d %H:%M:%S')
+    logging.getLogger('tesoro').setLevel(level)
+
+
+setup_logging()
 logger = logging.getLogger('tesoro')
 
 ROUTES = web.RouteTableDef()
@@ -25,67 +32,73 @@ TESORO_COUNTER = Counter('tesoro_requests', 'Tesoro requests')
 TESORO_FAILED_COUNTER = Counter('tesoro_requests_failed',
                                 'Tesoro failed requests')
 REVEAL_COUNTER = Counter('kapitan_reveal_requests',
-                         'Kapitan reveal ref requests')
+                         'Kapitan reveal requests')
 REVEAL_FAILED_COUNTER = Counter('kapitan_reveal_requests_failed',
-                                'Kapitan reveal ref failed requests ')
+                                'Kapitan reveal failed requests ')
+
 
 @ROUTES.post('/mutate')
 async def mutate_handler(request):
     TESORO_COUNTER.inc()
-    req_json = {}
+    req_obj = {}
     req_uid = None
+    req_namespace: None
+    req_kind: None
+    req_resource: None
 
     try:
         req_json = await request.json()
-
-        req_original = deepcopy(req_json) # XXX
         req_uid = req_json["request"]["uid"]
-        req_json = req_json["request"]["object"]
+        req_namespace = req_json["request"]["namespace"]
+        req_kind = req_json["request"]["kind"]
+        req_resource = req_json["request"]["resource"]
+        req_obj = req_json["request"]["object"]
     except json.decoder.JSONDecodeError:
         TESORO_FAILED_COUNTER.inc()
         return web.Response(status=500, reason='Request not JSON')
+    except KeyError:
+        TESORO_FAILED_COUNTER.inc()
+        return web.Response(status=500, reason='Invalid JSON request')
 
-    annotations = kapicorp_annotations(req_json)
-
-    if req_original["request"]["namespace"] == "tesoro":
-        logger.debug("Request Object: %s", req_original)
+    annotations = kapicorp_annotations(req_obj)
 
     if annotations.get("kapicorp.com/tesoro", None) == "kapitan-reveal-refs":
         try:
-            req_copy = deepcopy(req_json)
+            logger.debug("Request Uid: %s Namespace: %s Kind: %s Resource: %s",
+                         req_uid, req_namespace, req_kind, req_resource)
+            req_copy = deepcopy(req_obj)
 
             reveal_req_func = lambda: kapitan_reveal_json(req_copy)
             req_revealed = await run_blocking(reveal_req_func)
-            patch = make_patch(req_json, req_revealed)
-            logger.debug("[PATCH] %s", patch)
+            patch = make_patch(req_obj, req_revealed)
             REVEAL_COUNTER.inc()
-            logger.debug("[ANNOTATED] response revealed allow: %s patch: %s", True, patch)
+            logger.debug("Kapitan reveal successful, allowed with patch: %s",
+                         patch)
             return make_response(req_uid, patch, allow=True)
         except Exception as e:
+            logger.debug("Got exception error: %s %s", type(e), str(e))
+            logger.debug("Kapitan reveal failed, disallowed")
             REVEAL_FAILED_COUNTER.inc()
-            logger.debug("Got exception error %s %s", type(e), str(e))
-            logger.debug("[ANNOTATED] response reveal failed allow: %s patch: %s", False, None)
             return make_response(req_uid, [], allow=False,
                                  message="Kapitan reveal failed")
     else:
         # not annotated, default allow
-        logger.debug("[NOT ANNOTATED] response default allow: %s patch: %s", True, None)
         return make_response(req_uid, [], allow=True)
 
+    TESORO_FAILED_COUNTER.inc()
     return web.Response(status=500, reason='Unknown error')
 
+
 def kapicorp_annotations(req_obj):
+    "returns kapicorp annotations dict for req_obj"
     annotations = {}
-    # pprint(req_obj)
     try:
         for anno_key, anno_value in req_obj["metadata"]["annotations"].items():
             if anno_key.startswith("kapicorp.com/"):
                 annotations[anno_key] = anno_value
     except KeyError:
-        logger.debug("kapicorp_annotations() %s", annotations)
         return annotations
 
-    logger.debug("kapicorp_annotations() %s", annotations)
     return annotations
 
 
@@ -108,7 +121,6 @@ def make_response(uid, patch, allow=False, message=""):
     if message:
         response["response"]["status"] = {"message": message}
 
-    logger.debug("make_response %s", response)
     return web.json_response(response)
 
 
@@ -124,7 +136,8 @@ def kapitan_reveal_json(json_doc):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Tesoro - Kapitan Admission Controller')
+    parser = argparse.ArgumentParser(description=('Tesoro'
+                                     ' - Kapitan Admission Controller'))
     parser.add_argument('--verbose', action='store_true', default=False)
     parser.add_argument('--port', action='store', type=int, default=8080)
     parser.add_argument('--host', action='store', default='0.0.0.0')
@@ -136,6 +149,11 @@ if __name__ == '__main__':
                         default=9095)
     parser.add_argument('--metrics-host', action='store', default='0.0.0.0')
     args = parser.parse_args()
+    logger.info("Starting tesoro with args: %s", args)
+
+    if args.verbose:
+        setup_logging(level=logging.DEBUG)
+        logger.debug("Logging level set to DEBUG")
 
     app = web.Application()
     app.add_routes(ROUTES)

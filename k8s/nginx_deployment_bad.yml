@@ -20,6 +20,8 @@ spec:
         ports:
         - containerPort: 80
         env:
-          - name: KAP_SECRET
+          - name: KAP_REF
             value: "?{base64:eyJkYXRhIjogImNtVm1JREVnWkdGMFlRPT0iLCAiZW5jb2RpbmciOiAib3JpZ2luYWwiLCAidHlwZSI6ICJiYXNlNjQifQQ==:embedded}"
+          - name: KAP_REF2
+            value: "?{base64:i/do/not/exist}"
 

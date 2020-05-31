@@ -5,7 +5,6 @@ metadata:
   name: tesoro-admission-controller
 webhooks:
   - name: tesoro-admission-controller.tesoro.svc
-    failurePolicy: Fail
     clientConfig:
       service:
         name: tesoro-admission-controller
