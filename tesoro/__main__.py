@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 from aiohttp import web
+from aiohttp.log import access_logger
 from base64 import b64encode
 from copy import deepcopy
 import json
@@ -35,6 +36,11 @@ REVEAL_COUNTER = Counter('kapitan_reveal_requests',
                          'Kapitan reveal requests')
 REVEAL_FAILED_COUNTER = Counter('kapitan_reveal_requests_failed',
                                 'Kapitan reveal failed requests ')
+
+
+@ROUTES.get('/healthz')
+async def healthz(request):
+    return web.Response(status=200, text='ok')
 
 
 @ROUTES.post('/mutate')
@@ -139,6 +145,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=('Tesoro'
                                      ' - Kapitan Admission Controller'))
     parser.add_argument('--verbose', action='store_true', default=False)
+    parser.add_argument('--access-log', action='store_true', default=False)
     parser.add_argument('--port', action='store', type=int, default=8080)
     parser.add_argument('--host', action='store', default='0.0.0.0')
     parser.add_argument('--cert-file', action='store', default=None)
@@ -165,6 +172,10 @@ if __name__ == '__main__':
                                              capath=args.ca_path)
         ssl_ctx.load_cert_chain(args.cert_file, args.key_file)
 
+    access_log = None
+    if args.access_log:
+        access_log = access_logger
+
     prom_http_server(args.metrics_port, args.metrics_host)
     web.run_app(app, host=args.host, port=args.port, ssl_context=ssl_ctx,
-                access_log=None)
+                access_log=access_log)
