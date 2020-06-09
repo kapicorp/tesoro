@@ -1,9 +1,14 @@
 {
    "request":{
+       "uid": "uid-here",
+       "namespace": "namespace-here",
+       "kind": "kind-here",
+       "resource": "resource-here",
       "object":{
+
          "metadata":{
-            "annotations":{
-               "kapicorp.com/tesoro":"kapitan-reveal-refs"
+            "labels":{
+               "kapicorp.com/tesoro":"enabled"
             }
          },
          "spec":{

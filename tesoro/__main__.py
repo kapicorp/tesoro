@@ -4,7 +4,7 @@ import argparse
 import asyncio
 from aiohttp import web
 from aiohttp.log import access_logger
-from base64 import b64encode
+from base64 import b64encode, b64decode
 from copy import deepcopy
 import json
 import jsonpatch
@@ -66,17 +66,23 @@ async def mutate_handler(request):
         TESORO_FAILED_COUNTER.inc()
         return web.Response(status=500, reason='Invalid JSON request')
 
-    annotations = kapicorp_annotations(req_obj)
+    labels = kapicorp_labels(req_obj)
 
-    if annotations.get("kapicorp.com/tesoro", None) == "kapitan-reveal-refs":
+    if labels.get("kapicorp.com/tesoro", None) == "enabled":
         try:
             logger.debug("Request Uid: %s Namespace: %s Kind: %s Resource: %s",
                          req_uid, req_namespace, req_kind, req_resource)
             req_copy = deepcopy(req_obj)
+            obj_kind = req_obj["kind"]
+
+            transformations = prepare_obj(req_copy, obj_kind)
+            logger.debug("Tranformations: %s", transformations)
 
             reveal_req_func = lambda: kapitan_reveal_json(req_copy)
             req_revealed = await run_blocking(reveal_req_func)
+            transform_obj(req_revealed, transformations)
             patch = make_patch(req_obj, req_revealed)
+            annotate_patch(patch)
             REVEAL_COUNTER.inc()
             logger.debug("Kapitan reveal successful, allowed with patch: %s",
                          patch)
@@ -88,30 +94,100 @@ async def mutate_handler(request):
             return make_response(req_uid, [], allow=False,
                                  message="Kapitan reveal failed")
     else:
-        # not annotated, default allow
+        # not labelled, default allow
         return make_response(req_uid, [], allow=True)
 
     TESORO_FAILED_COUNTER.inc()
     return web.Response(status=500, reason='Unknown error')
 
 
-def kapicorp_annotations(req_obj):
-    "returns kapicorp annotations dict for req_obj"
-    annotations = {}
-    try:
-        for anno_key, anno_value in req_obj["metadata"]["annotations"].items():
-            if anno_key.startswith("kapicorp.com/"):
-                annotations[anno_key] = anno_value
-    except KeyError:
-        return annotations
+def transform_obj(req_obj, transformations):
+    "updates req_obj with transformations"
+    secret_tranformations = transformations.get("Secret", {})
+    secret_data_items = secret_tranformations.get("data", {}).items()
+    for item_name, transform in secret_data_items:
+        encoding = transform.get("encoding", None)
+        if encoding == 'original':
+            item_value_encoded = b64encode(req_obj["data"][item_name].encode()).decode()
+            req_obj["data"][item_name] = item_value_encoded
 
-    return annotations
+
+def prepare_obj(req_obj, obj_kind):
+    """
+    updates object and returns transformation operations
+    on specific object kinds to perform post reveal
+    """
+    transformations = {}
+    if obj_kind == "Secret":
+        transformations["Secret"] = {"data": {}}
+        for item_name, item_value in req_obj["data"].items():
+            decoded_ref = b64decode(item_value).decode()
+            logger.debug("Secret transformation: decoded_ref: %s", decoded_ref)
+
+            # TODO use kapitan's ref pattern instead
+            if not (decoded_ref.startswith('?{') and
+                    decoded_ref.endswith('}')):
+                continue  # this is not a ref, do nothing
+            else:
+                # peek and register ref's encoding
+                ref_obj = REF_CONTROLLER[decoded_ref]
+                transformations["Secret"]["data"][item_name] = {"encoding": ref_obj.encoding}
+                # override with ref so we can reveal
+                req_obj["data"][item_name] = decoded_ref
+
+    return transformations
+
+
+def kapicorp_labels(req_obj):
+    "returns kapicorp labels dict for req_obj"
+    labels = {}
+    try:
+        for label_key, label_value in req_obj["metadata"]["labels"].items():
+            if label_key.startswith("kapicorp.com/"):
+                labels[label_key] = label_value
+    except KeyError:
+        return labels
+
+    return labels
+
+
+def annotate_patch(patch):
+    """
+    if patch not empty, annotates patch with list of revealed paths
+    e.g. 'kapicorp.com/tesoro: revealed: ["/spec/templates/key1"]'
+    """
+    revealed_paths = []
+
+    for p in patch:
+        path = p.get("path")
+        if path:
+            revealed_paths.append(path)
+
+    if revealed_paths:
+        patch.append({
+            "op": "add",
+            "path": "/metadata/annotations/kapicorp.com~1tesoro",
+            "value": "revealed: "+", ".join(revealed_paths)
+        })
 
 
 def make_patch(src_json, dst_json):
     "returns jsonpatch for diff between src_json and dst_json"
-    p = jsonpatch.make_patch(src_json, dst_json)
-    return p.patch
+    patch = jsonpatch.make_patch(src_json, dst_json)
+    patch = patch.patch
+
+    last_applied = ('/metadata/annotations/'
+                    'kubectl.kubernetes.io~1last-applied-configuration')
+
+    # remove last_applied from patch if found (meaning it was revealed)
+    # as we don't want to interfer with previous state
+    for idx, patch_item in enumerate(patch):
+        if patch_item['path'] == last_applied:
+            patch.pop(idx)
+            logger.debug("Removed last-applied-configuration annotation"
+                         "from patch")
+
+    return patch
 
 
 def make_response(uid, patch, allow=False, message=""):
