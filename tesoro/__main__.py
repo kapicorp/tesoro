@@ -68,7 +68,7 @@ async def mutate_handler(request):
 
     labels = kapicorp_labels(req_obj)
 
-    if labels.get("kapicorp.com/tesoro", None) == "enabled":
+    if labels.get("tesoro.kapicorp.com/enabled", None) == "true":
         try:
             logger.debug("Request Uid: %s Namespace: %s Kind: %s Resource: %s",
                          req_uid, req_namespace, req_kind, req_resource)
@@ -143,7 +143,7 @@ def kapicorp_labels(req_obj):
     labels = {}
     try:
         for label_key, label_value in req_obj["metadata"]["labels"].items():
-            if label_key.startswith("kapicorp.com/"):
+            if label_key.startswith("tesoro.kapicorp.com/"):
                 labels[label_key] = label_value
     except KeyError:
         return labels
@@ -154,7 +154,7 @@ def kapicorp_labels(req_obj):
 def annotate_patch(patch):
     """
     if patch not empty, annotates patch with list of revealed paths
-    e.g. 'kapicorp.com/tesoro: revealed: ["/spec/templates/key1"]'
+    e.g. 'tesoro.kapicorp.com/revealed: ["/spec/templates/key1"]'
     """
     revealed_paths = []
 
@@ -166,8 +166,8 @@ def annotate_patch(patch):
     if revealed_paths:
         patch.append({
             "op": "add",
-            "path": "/metadata/annotations/kapicorp.com~1tesoro",
-            "value": "revealed: "+", ".join(revealed_paths)
+            "path": "/metadata/annotations/tesoro.kapicorp.com~1revealed",
+            "value": json.dumps(revealed_paths)
         })
 
 
