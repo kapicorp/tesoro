@@ -1,6 +1,8 @@
 import json
 import jsonpatch
+import logging
 
+logger = logging.getLogger('tesoro')
 
 def annotate_patch(patch):
     """

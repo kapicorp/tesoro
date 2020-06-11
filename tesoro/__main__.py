@@ -6,14 +6,13 @@ import ssl
 
 from aiohttp import web
 from aiohttp.log import access_logger
-from tesoro import ROUTES
+from tesoro.handlers import healthz_handler, mutate_handler
 from tesoro.metrics import prom_http_server
 from tesoro.utils import setup_logging
 
 
 setup_logging()
 logger = logging.getLogger('tesoro')
-
 
 parser = argparse.ArgumentParser(description=('Tesoro'
                                  ' - Kapitan Admission Controller'))
@@ -36,7 +35,8 @@ if args.verbose:
     logger.debug("Logging level set to DEBUG")
 
 app = web.Application()
-app.add_routes(ROUTES)
+app.add_routes([web.get('/healthz', healthz_handler),
+                web.post('/mutate', mutate_handler)])
 
 ssl_ctx = None
 if None not in (args.key_file, args.cert_file):

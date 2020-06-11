@@ -3,24 +3,21 @@ from copy import deepcopy
 import json
 import logging
 from aiohttp import web
-from tesoro import ROUTES
 from tesoro.metrics import (
         TESORO_COUNTER, TESORO_FAILED_COUNTER,
         REVEAL_COUNTER, REVEAL_FAILED_COUNTER
 )
 from tesoro.patch import make_patch, annotate_patch
 from tesoro.transform import prepare_obj, transform_obj
-from tesoro.utils import kapicorp_labels, run_blocking
+from tesoro.utils import kapicorp_labels, run_blocking, kapitan_reveal_json
 
 logger = logging.getLogger('tesoro')
 
 
-@ROUTES.get('/healthz')
-async def healthz(request):
+async def healthz_handler(request):
     return web.Response(status=200, text='ok')
 
 
-@ROUTES.post('/mutate')
 async def mutate_handler(request):
     TESORO_COUNTER.inc()
     req_obj = {}
