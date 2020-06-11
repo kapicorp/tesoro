@@ -3,10 +3,10 @@ from copy import deepcopy
 import json
 import logging
 from aiohttp import web
-from tesoro import (
-        ROUTES, TESORO_COUNTER,
-        TESORO_FAILED_COUNTER, REVEAL_COUNTER,
-        REVEAL_FAILED_COUNTER
+from tesoro import ROUTES
+from tesoro.metrics import (
+        TESORO_COUNTER, TESORO_FAILED_COUNTER,
+        REVEAL_COUNTER, REVEAL_FAILED_COUNTER
 )
 from tesoro.patch import make_patch, annotate_patch
 from tesoro.transform import prepare_obj, transform_obj

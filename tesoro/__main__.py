@@ -6,9 +6,9 @@ import ssl
 
 from aiohttp import web
 from aiohttp.log import access_logger
-from prometheus_client import start_http_server as prom_http_server
-from tesoro.utils import setup_logging
 from tesoro import ROUTES
+from tesoro.metrics import prom_http_server
+from tesoro.utils import setup_logging
 
 
 setup_logging()
