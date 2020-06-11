@@ -10,7 +10,7 @@ def kapicorp_labels(req_obj):
     labels = {}
     try:
         for label_key, label_value in req_obj["metadata"]["labels"].items():
-            if label_key.startswith("tesoro.kapicorp.com/"):
+            if label_key.startswith("tesoro.kapicorp.com"):
                 labels[label_key] = label_value
     except KeyError:
         return labels

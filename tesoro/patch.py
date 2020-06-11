@@ -4,6 +4,7 @@ import logging
 
 logger = logging.getLogger('tesoro')
 
+
 def annotate_patch(patch):
     """
     if patch not empty, annotates patch with list of revealed paths
@@ -41,4 +42,3 @@ def make_patch(src_json, dst_json):
                          "from patch")
 
     return patch
-

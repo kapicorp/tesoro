@@ -42,7 +42,7 @@ async def mutate_handler(request):
 
     labels = kapicorp_labels(req_obj)
 
-    if labels.get("tesoro.kapicorp.com/enabled", None) == "true":
+    if labels.get("tesoro.kapicorp.com", None) == "enabled":
         try:
             logger.debug("Request Uid: %s Namespace: %s Kind: %s Resource: %s",
                          req_uid, req_namespace, req_kind, req_resource)
