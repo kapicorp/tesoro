@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: tesoro
-          image: ramaro/tesoro
+          image: kapicorp/tesoro
           imagePullPolicy: Always
           ports:
             - containerPort: 443
