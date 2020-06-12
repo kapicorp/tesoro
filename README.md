@@ -3,7 +3,7 @@
 
 <img src="./docs/images/tesoro_logo.png" width="250">
 
-Tesoro allows you to seamlessly apply Kapitan [secret refs](https://kapitan.dev/secrets/) in compiled Kubernetes manifests. As it runs in the cluster, it will reveal embedded kapitan secret refs in manifests when they are applied.
+Tesoro allows you to seamlessly apply Kubernetes manifests with Kapitan [secret refs](https://kapitan.dev/secrets/). As it runs in the cluster, it will reveal embedded Kapitan secret refs when they are applied. It supports all types of Kapitan secrets backends: AWS KMS, GCP KMS, Vault with more coming up.
 
 ## Example
 
@@ -16,15 +16,15 @@ compiled/my-target/manifests
 ...
 ```
 
-And you have the Tesoro reveal annotation and kapitan secret ref in `my-secret.yml`:
+And you have the Tesoro label and kapitan secret ref in `my-secret.yml`:
 
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
   name: my-secret
-  annotations:
-    kapicorp.com/tesoro: kapitan-reveal-refs
+  labels:
+    tesoro.kapicorp.com: enabled
 type: Opaque
 stringData:
   secret_sauce: ?{gkms:my/secret1:deadbeef}
@@ -56,7 +56,7 @@ Why is this a big deal? Because without Tesoro, you'd have to reveal secrets loc
 $ kapitan refs --reveal -f compiled/my-target/manifests/my-secret.yml | kubectl apply -f -
 ```
 
-How do I know my secrets refs revealed succesfully? You would see the following:
+How do I know my secret refs revealed succesfully? You would see the following:
 ```shell
 $ kubectl apply -f compiled/my-target/manifests/my-secret.yml
 Error from server: error when creating "compiled/my-target/manifests/my-secret.yml": admission webhook "tesoro-admission-controller.tesoro.svc" denied the request: Kapitan reveal failed
@@ -65,7 +65,7 @@ You can also setup Prometheus monitoring for this. See [Monitoring](https://gith
 
 ## Setup
 
-Tesoro is a Kubernetes Admission Controller [Mutating Webhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook), which means that you'll need at minimum a Kubernetes v1.13 cluster with [PodSecurityPolicy](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#podsecuritypolicy) support enabled (e.g. in GCP, a cluster created with the `--enable-pod-security-policy` flag)
+Tesoro is a Kubernetes Admission Controller [Mutating Webhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook), which means that you'll need at minimum a Kubernetes v1.9 cluster.
 
 ### Example Kubernetes Config
 
@@ -78,28 +78,21 @@ $ kubectl apply -f k8s/clusterrole.yaml
 $ kubectl apply -f k8s/clusterrolebinding.yaml
 ```
 
-#### 2 - Pod Security Policy (you will likely need it but this one is relaxed and for example only!)
+#### 2 - Tesoro Namespace
 
-```shell
-$ kubectl apply -f k8s/pod_security_policy.yaml
-```
-
-#### 3 - Tesoro Namespace
-
-We will be running the webhook and testing in the `tesoro` namespace
+We will be running the webhook in the `tesoro` namespace
 
 ```shell
 $ kubectl apply -f k8s/tesoro_namespace.yaml
 ```
 
-#### 4 - Tesoro Webhook Config & Certs
+#### 3 - Tesoro Webhook Config & Certs
 
 For convenience, you'll find valid certificates in `tesoro_mutatingwebhook.yaml` and `tesoro_secret.yaml` for testing purposes only.
 
 Security advice: FOR PROD, PLEASE SETUP YOUR OWN.
 
 ```shell
-$ kubectl -n tesoro apply -f k8s/tesoro_service_account.yaml
 $ kubectl -n tesoro apply -f k8s/tesoro_secret.yaml
 $ kubectl -n tesoro apply -f k8s/tesoro_service.yaml
 $ kubectl -n tesoro apply -f k8s/tesoro_deployment.yaml
@@ -116,15 +109,15 @@ tesoro-admission-controller-584b9d87c6-p69bx   1/1     Running   0          1m
 And finally apply the MutatingWebhookConfiguration:
 
 ```shell
-$ kubectl -n tesoro apply -f k8s/tesoro_mutatingwebhook.yaml
+$ kubectl apply -f k8s/tesoro_mutatingwebhook.yaml
 ```
 
-#### 5 - Try a Kubernetes Manifest with Secret Refs
+#### 4 - Try a Kubernetes Manifest with Secret Refs
 
 This manifest with a valid ref, should work:
 
 ```shell
-$ kubectl -n tesoro apply -f k8s/nginx_deployment.yml
+$ kubectl apply -f k8s/nginx_deployment.yml
 deployment.apps/nginx-deployment created
 ```
 
@@ -132,7 +125,7 @@ deployment.apps/nginx-deployment created
 The following manifest with a bogus ref, should fail:
 
 ```shell
-kubectl -n tesoro apply -f k8s/nginx_deployment_bad.yml
+kubectl tesoro apply -f k8s/nginx_deployment_bad.yml
 Error from server: error when creating "nginx_deployment_bad.yml": admission webhook "tesoro-admission-controller.tesoro.svc" denied the request: Kapitan reveal failed
 ```
 
