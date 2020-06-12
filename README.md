@@ -117,7 +117,7 @@ $ kubectl apply -f k8s/tesoro_mutatingwebhook.yaml
 This manifest with a valid ref, should work:
 
 ```shell
-$ kubectl apply -f k8s/nginx_deployment.yml
+$ kubectl apply -f tests/k8s/nginx_deployment.yml
 deployment.apps/nginx-deployment created
 ```
 
@@ -125,7 +125,7 @@ deployment.apps/nginx-deployment created
 The following manifest with a bogus ref, should fail:
 
 ```shell
-kubectl tesoro apply -f k8s/nginx_deployment_bad.yml
+kubectl apply -f tests/k8s/nginx_deployment_bad.yml
 Error from server: error when creating "nginx_deployment_bad.yml": admission webhook "tesoro-admission-controller.tesoro.svc" denied the request: Kapitan reveal failed
 ```
 

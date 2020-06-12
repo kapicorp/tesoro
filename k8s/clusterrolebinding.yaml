@@ -4,10 +4,6 @@ metadata:
   name: tesoro-admission-controller-crb
   labels:
     app: tesoro-admission-controller
-subjects:
-- kind: ServiceAccount
-  name: tesoro-admission-controller-sa
-  namespace: tesoro
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

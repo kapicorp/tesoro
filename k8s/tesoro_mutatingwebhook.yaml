@@ -5,6 +5,10 @@ metadata:
   name: tesoro-admission-controller
 webhooks:
   - name: tesoro-admission-controller.tesoro.svc
+    failurePolicy: Fail
+    objectSelector:
+      matchLabels:
+        tesoro.kapicorp.com: enabled
     clientConfig:
       service:
         name: tesoro-admission-controller

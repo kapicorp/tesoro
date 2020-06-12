@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
-  annotations:
-    kapicorp.com/tesoro: kapitan-reveal-refs
+  labels:
+    tesoro.kapicorp.com: enabled
 spec:
   selector:
     matchLabels:
@@ -13,7 +13,6 @@ spec:
       labels:
         app: nginx
     spec:
-      serviceAccountName: tesoro-admission-controller-sa
       containers:
       - name: nginx
         image: nginx:1.14.2

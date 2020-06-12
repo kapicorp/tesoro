@@ -15,7 +15,7 @@ class TestPreprare(unittest.TestCase):
             "metadata": {
                 "name": "some-secret",
                 "labels": {
-                    "kapicorp.com/tesoro": "enabled"
+                    "tesoro.kapicorp.com": "enabled"
                 },
             },
             "type": "Opaque",
@@ -52,7 +52,7 @@ class TestTransform(unittest.TestCase):
             "metadata": {
                 "name": "some-secret",
                 "labels": {
-                    "kapicorp.com/tesoro": "enabled"
+                    "tesoro.kapicorp.com": "enabled"
                 },
             },
             "type": "Opaque",
@@ -82,7 +82,7 @@ class TestTransform(unittest.TestCase):
             "metadata": {
                 "name": "some-secret",
                 "labels": {
-                    "kapicorp.com/tesoro": "enabled"
+                    "tesoro.kapicorp.com": "enabled"
                 },
             },
             "type": "Opaque",

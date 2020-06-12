@@ -14,18 +14,17 @@ spec:
       labels:
         app: tesoro-admission-controller
     spec:
-      serviceAccountName: tesoro-admission-controller-sa
       containers:
         - name: tesoro
           image: ramaro/tesoro
           imagePullPolicy: Always
           ports:
-            - containerPort: 8443
+            - containerPort: 443
               name: tesoro-api
             - containerPort: 9095
               name: metrics
           args:
-            - --port=8443
+            - --port=443
             - --cert-file=/certs/cert.pem
             - --key-file=/certs/priv.key
           volumeMounts:
