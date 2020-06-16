@@ -3,6 +3,8 @@
 
 <img src="./docs/images/tesoro_logo.png" width="250">
 
+[![Build Status](https://travis-ci.org/kapicorp/tesoro.svg?branch=master)](https://travis-ci.org/kapicorp/tesoro)
+
 Tesoro allows you to seamlessly apply Kubernetes manifests with Kapitan [secret refs](https://kapitan.dev/secrets/). As it runs in the cluster, it will reveal embedded Kapitan secret refs when they are applied. It supports all types of Kapitan secrets backends: AWS KMS, GCP KMS, Vault with more coming up.
 
 ## Example

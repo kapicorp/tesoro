@@ -2,7 +2,7 @@ from asyncio import get_running_loop
 from tesoro import REVEALER
 import logging
 
-logger = logging.getLogger('tesoro')
+logger = logging.getLogger("tesoro")
 
 
 def kapicorp_labels(req_obj):
@@ -30,7 +30,7 @@ def kapitan_reveal_json(json_doc):
 
 
 def setup_logging(level=logging.INFO):
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
-                        level=level,
-                        datefmt='%Y-%m-%d %H:%M:%S')
-    logging.getLogger('tesoro').setLevel(level)
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)-8s %(message)s", level=level, datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    logging.getLogger("tesoro").setLevel(level)
