@@ -8,7 +8,6 @@ matrix:
 branches:
   only:
     - master
-    - /v(\d+\.){2}\d+(-rc\.\d+)?/ # regex for tag branches e.g. v0.22.0-rc.1, v0.22.0 etc
 notifications:
   recipients:
     - kapitan@google.com
@@ -28,7 +27,7 @@ before_install:
 
 install:
   - pip3 install -r requirements.txt
-  - pip3 install coverage black
+  - pip3 install coverage black kapitan==0.28.0-rc.1
 
 script:
   - make test && make test_coverage && make test_formatting

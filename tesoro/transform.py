@@ -3,7 +3,7 @@ from tesoro import REF_CONTROLLER
 
 import logging
 
-logger = logging.getLogger('tesoro')
+logger = logging.getLogger("tesoro")
 
 
 def prepare_obj(req_obj):
@@ -20,13 +20,12 @@ def prepare_obj(req_obj):
             logger.debug("Secret transformation: decoded_ref: %s", decoded_ref)
 
             # TODO use kapitan's ref pattern instead
-            if not (decoded_ref.startswith('?{') and
-                    decoded_ref.endswith('}')):
+            if not (decoded_ref.startswith("?{") and decoded_ref.endswith("}")):
                 continue  # this is not a ref, do nothing
             else:
                 # peek and register ref's encoding
                 ref_obj = REF_CONTROLLER[decoded_ref]
-                transformations["Secret"]["data"][item_name] = {"encoding":ref_obj.encoding}
+                transformations["Secret"]["data"][item_name] = {"encoding": ref_obj.encoding}
                 # override with ref so we can reveal
                 req_obj["data"][item_name] = decoded_ref
 
@@ -39,6 +38,6 @@ def transform_obj(req_obj, transformations):
     secret_data_items = secret_tranformations.get("data", {}).items()
     for item_name, transform in secret_data_items:
         encoding = transform.get("encoding", None)
-        if encoding == 'original':
+        if encoding == "original":
             item_value_encoded = b64encode(req_obj["data"][item_name].encode()).decode()
             req_obj["data"][item_name] = item_value_encoded
