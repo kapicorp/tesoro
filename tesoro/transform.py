@@ -1,7 +1,10 @@
-from base64 import b64encode, b64decode
-from tesoro import REF_CONTROLLER
-
 import logging
+import re
+from base64 import b64decode, b64encode
+
+from kapitan.refs.base import REF_TOKEN_TAG_PATTERN
+
+from tesoro import REF_CONTROLLER
 
 logger = logging.getLogger("tesoro")
 
@@ -19,8 +22,8 @@ def prepare_obj(req_obj):
             decoded_ref = b64decode(item_value).decode()
             logger.debug("Secret transformation: decoded_ref: %s", decoded_ref)
 
-            # TODO use kapitan's ref pattern instead
-            if not (decoded_ref.startswith("?{") and decoded_ref.endswith("}")):
+            is_valid_ref = re.match(REF_TOKEN_TAG_PATTERN, decoded_ref)
+            if not is_valid_ref:
                 continue  # this is not a ref, do nothing
             else:
                 # peek and register ref's encoding

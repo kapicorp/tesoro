@@ -142,3 +142,17 @@ tesoro_requests_failed_total | Tesoro failed requests | counter
 kapitan_reveal_requests_total | Kapitan reveal total requests | counter
 kapitan_reveal_requests_failed_total | Kapitan reveal failed requests | counter
 
+
+
+### Local testing
+
+Run tesoro with `python -m tesoro --verbose` locally (uses 8080 port by default) and test it's endpoints by sending the same requests that k8s would send to it.
+E.g.
+
+```
+
+cd tests/
+
+curl -X POST -H "Content-Type: application/json" --data @request.json http://localhost:8080/mutate
+
+```
