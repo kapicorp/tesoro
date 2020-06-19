@@ -6,10 +6,10 @@ import ssl
 
 from aiohttp import web
 from aiohttp.log import access_logger
+
 from tesoro.handlers import healthz_handler, mutate_handler
 from tesoro.metrics import prom_http_server
 from tesoro.utils import setup_logging
-
 
 setup_logging()
 logger = logging.getLogger("tesoro")
