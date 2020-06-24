@@ -10,7 +10,7 @@ branches:
     - master
 notifications:
   recipients:
-    - kapitan@google.com
+    - kapitan-admins@googlegroups.com
   email:
     on_success: change
     on_failure: always
