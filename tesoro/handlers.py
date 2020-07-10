@@ -4,18 +4,18 @@ import json
 import logging
 from aiohttp import web
 from tesoro.metrics import TESORO_COUNTER, TESORO_FAILED_COUNTER, REVEAL_COUNTER, REVEAL_FAILED_COUNTER
-from tesoro.patch import make_patch, annotate_patch
+from tesoro.patch import make_patch, annotate_patch, redact_patch
 from tesoro.transform import prepare_obj, transform_obj
 from tesoro.utils import kapicorp_labels, run_blocking, kapitan_reveal_json
 
-logger = logging.getLogger("tesoro")
+logger = logging.getLogger(__name__)
 
 
 async def healthz_handler(request):
     return web.Response(status=200, text="ok")
 
 
-async def mutate_handler(request):
+async def mutate_handler(request, log_redact_patch=True):
     TESORO_COUNTER.inc()
     req_obj = {}
     req_uid = None
@@ -59,7 +59,11 @@ async def mutate_handler(request):
             patch = make_patch(req_obj, req_revealed)
             annotate_patch(patch)
             REVEAL_COUNTER.inc()
-            logger.debug("Kapitan reveal successful, allowed with patch: %s", patch)
+            if log_redact_patch:
+                logger.debug("Kapitan reveal successful, allowed with patch: %s", redact_patch(patch))
+            else:
+                logger.debug("Kapitan reveal successful, allowed with patch: %s", patch)
+
             return make_response(req_uid, patch, allow=True)
         except Exception as e:
             logger.debug("Got exception error: %s %s", type(e), str(e))

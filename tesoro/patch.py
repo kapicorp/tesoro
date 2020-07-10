@@ -1,8 +1,9 @@
+from copy import deepcopy
 import json
 import jsonpatch
 import logging
 
-logger = logging.getLogger("tesoro")
+logger = logging.getLogger(__name__)
 
 
 def annotate_patch(patch):
@@ -39,6 +40,18 @@ def make_patch(src_json, dst_json):
     for idx, patch_item in enumerate(patch):
         if patch_item["path"] == last_applied:
             patch.pop(idx)
-            logger.debug("Removed last-applied-configuration annotation" "from patch")
+            logger.debug("Removed last-applied-configuration annotation from patch")
 
     return patch
+
+def redact_patch(patch):
+    "returns a copy of patch with redacted values"
+    redacted_patch = deepcopy(patch)
+
+    for patch_item in redacted_patch:
+        # don't redact this annotation
+        if patch_item["path"] == "/metadata/annotations/tesoro.kapicorp.com~1revealed":
+            continue
+        patch_item["value"] = '!REDACTED VALUE!'
+
+    return redacted_patch

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from functools import partial
 import logging
 import ssl
 
@@ -11,11 +12,13 @@ from tesoro.handlers import healthz_handler, mutate_handler
 from tesoro.metrics import prom_http_server
 from tesoro.utils import setup_logging
 
-setup_logging()
-logger = logging.getLogger("tesoro")
+setup_logging(kapitan_debug=False)
+logger = logging.getLogger()
 
 parser = argparse.ArgumentParser(description=("Tesoro" " - Kapitan Admission Controller"))
 parser.add_argument("--verbose", action="store_true", default=False)
+parser.add_argument("--verbose-no-redact", action="store_true", default=False)
+parser.add_argument("--verbose-kapitan", action="store_true", default=False)
 parser.add_argument("--access-log", action="store_true", default=False)
 parser.add_argument("--port", action="store", type=int, default=8080)
 parser.add_argument("--host", action="store", default="0.0.0.0")
@@ -29,11 +32,12 @@ args = parser.parse_args()
 logger.info("Starting tesoro with args: %s", args)
 
 if args.verbose:
-    setup_logging(level=logging.DEBUG)
+    setup_logging(level=logging.DEBUG, kapitan_debug=args.verbose_kapitan)
     logger.debug("Logging level set to DEBUG")
 
 app = web.Application()
-app.add_routes([web.get("/healthz", healthz_handler), web.post("/mutate", mutate_handler)])
+app.add_routes([web.get("/healthz", healthz_handler),
+                web.post("/mutate", partial(mutate_handler, log_redact_patch=(not args.verbose_no_redact)))])
 
 ssl_ctx = None
 if None not in (args.key_file, args.cert_file):
