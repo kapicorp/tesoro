@@ -36,8 +36,12 @@ if args.verbose:
     logger.debug("Logging level set to DEBUG")
 
 app = web.Application()
-app.add_routes([web.get("/healthz", healthz_handler),
-                web.post("/mutate", partial(mutate_handler, log_redact_patch=(not args.verbose_no_redact)))])
+app.add_routes(
+    [
+        web.get("/healthz", healthz_handler),
+        web.post("/mutate", partial(mutate_handler, log_redact_patch=(not args.verbose_no_redact))),
+    ]
+)
 
 ssl_ctx = None
 if None not in (args.key_file, args.cert_file):

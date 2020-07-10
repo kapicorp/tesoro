@@ -44,6 +44,7 @@ def make_patch(src_json, dst_json):
 
     return patch
 
+
 def redact_patch(patch):
     "returns a copy of patch with redacted values"
     redacted_patch = deepcopy(patch)
@@ -52,6 +53,6 @@ def redact_patch(patch):
         # don't redact this annotation
         if patch_item["path"] == "/metadata/annotations/tesoro.kapicorp.com~1revealed":
             continue
-        patch_item["value"] = '!REDACTED VALUE!'
+        patch_item["value"] = "!REDACTED VALUE!"
 
     return redacted_patch

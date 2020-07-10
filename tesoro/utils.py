@@ -32,8 +32,8 @@ def kapitan_reveal_json(json_doc):
 def setup_logging(level=logging.INFO, kapitan_debug=False):
     "setup logging, set kapitan_debug to True for kapitan debug logging (dangerous)"
     for name, logger in logging.root.manager.loggerDict.items():
-        if name.startswith('kapitan.'):
-            logger.disabled=not kapitan_debug
+        if name.startswith("kapitan."):
+            logger.disabled = not kapitan_debug
 
     logging.basicConfig(
         format="%(asctime)s %(levelname)-8s %(message)s", level=level, datefmt="%Y-%m-%d %H:%M:%S"
