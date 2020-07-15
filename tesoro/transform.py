@@ -6,7 +6,7 @@ from kapitan.refs.base import REF_TOKEN_TAG_PATTERN
 
 from tesoro import REF_CONTROLLER
 
-logger = logging.getLogger("tesoro")
+logger = logging.getLogger(__name__)
 
 
 def prepare_obj(req_obj):
