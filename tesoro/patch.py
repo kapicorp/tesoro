@@ -1,4 +1,5 @@
 from copy import deepcopy
+from hashlib import sha256
 import json
 import jsonpatch
 import logging
@@ -53,6 +54,7 @@ def redact_patch(patch):
         # don't redact this annotation
         if patch_item["path"] == "/metadata/annotations/tesoro.kapicorp.com~1revealed":
             continue
-        patch_item["value"] = "!REDACTED VALUE!"
+        value_hash = sha256(patch_item["value"].encode()).hexdigest()
+        patch_item["value"] = f"!REDACTED VALUE! sha256={value_hash}"
 
     return redacted_patch

@@ -1,4 +1,5 @@
 import unittest
+from hashlib import sha256
 from tesoro.patch import redact_patch
 
 
@@ -15,5 +16,6 @@ class TestPatch(unittest.TestCase):
         redacted = redact_patch(patch)
 
         self.assertEqual(patch[0]["value"], "secret value to redact")
-        self.assertEqual(redacted[0]["value"], "!REDACTED VALUE!")
+        value_hash = sha256("secret value to redact".encode()).hexdigest()
+        self.assertEqual(redacted[0]["value"], f"!REDACTED VALUE! sha256={value_hash}")
         self.assertEqual(redacted[1]["value"], "no redact")
