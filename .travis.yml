@@ -30,4 +30,4 @@ install:
   - pip3 install coverage black kapitan==0.28.0-rc.1
 
 script:
-  - make test && make test_coverage && make test_formatting
+  - make test && make test_coverage
