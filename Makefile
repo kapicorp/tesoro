@@ -4,6 +4,9 @@ all: clean package
 test:
 	@echo ----- Running python tests -----
 	python3 -m unittest discover
+
+.PHONE: test_docker
+test_docker:
 	@echo ----- Testing build of docker image -----
 	docker build . --no-cache -t tesoro
 	@echo ----- Testing run of docker image -----
