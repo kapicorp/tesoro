@@ -21,12 +21,12 @@ test_coverage:
 .PHONY: test_formatting
 test_formatting:
 	@echo ----- Testing code formatting -----
-	black -l 110 -t py37 --check .
+	black --check .
 	@echo
 
 .PHONY: format_codestyle
 format_codestyle:
 	which black || echo "Install black with pip3 install --user black"
 	# ignores line length and reclass
-	black -l 110 -t py37 .
+	black .
 	@echo
