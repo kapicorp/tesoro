@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
-from functools import partial
 import logging
 import ssl
+from functools import partial
 
 from aiohttp import web
 from aiohttp.log import access_logger
