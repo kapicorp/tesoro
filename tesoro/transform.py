@@ -17,15 +17,18 @@ def prepare_obj(req_obj):
     transformations = {}
     obj_kind = req_obj["kind"]
     if obj_kind == "Secret":
+        secret_name = req_obj["metadata"]["name"]
         transformations["Secret"] = {"data": {}}
         for item_name, item_value in req_obj["data"].items():
             decoded_ref = b64decode(item_value).decode()
-            logger.debug("Secret transformation: decoded_ref: %s", decoded_ref)
 
             is_valid_ref = re.match(REF_TOKEN_TAG_PATTERN, decoded_ref)
             if not is_valid_ref:
                 continue  # this is not a ref, do nothing
             else:
+                logger.debug(
+                    "Secret transformation: secret name: %s decoded_ref: %s", secret_name, decoded_ref
+                )
                 # peek and register ref's encoding
                 ref_obj = REF_CONTROLLER[decoded_ref]
                 transformations["Secret"]["data"][item_name] = {"encoding": ref_obj.encoding}

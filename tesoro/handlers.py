@@ -2,11 +2,12 @@ from base64 import b64encode
 from copy import deepcopy
 import json
 import logging
+from sys import exc_info
 from aiohttp import web
 from tesoro.metrics import TESORO_COUNTER, TESORO_FAILED_COUNTER, REVEAL_COUNTER, REVEAL_FAILED_COUNTER
 from tesoro.patch import make_patch, annotate_patch, redact_patch
 from tesoro.transform import prepare_obj, transform_obj
-from tesoro.utils import kapicorp_labels, run_blocking, kapitan_reveal_json
+from tesoro.utils import kapicorp_labels, run_blocking, kapitan_reveal_json, KapitanRevealFail
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,9 @@ async def mutate_handler(request, log_redact_patch=True):
 
             reveal_req_func = lambda: kapitan_reveal_json(req_copy)
             req_revealed = await run_blocking(reveal_req_func)
+            if req_revealed is None:
+                raise KapitanRevealFail("revealed object is None")
+
             transform_obj(req_revealed, transformations)
             patch = make_patch(req_obj, req_revealed)
             annotate_patch(patch)
@@ -66,7 +70,8 @@ async def mutate_handler(request, log_redact_patch=True):
 
             return make_response(req_uid, patch, allow=True)
         except Exception as e:
-            logger.debug("Got exception error: %s %s", type(e), str(e))
+            exc_type, exc_value, _ = exc_info()
+            logger.debug("Got exception: %s: %s", exc_type, exc_value)
             logger.debug("Kapitan reveal failed, disallowed")
             REVEAL_FAILED_COUNTER.inc()
             return make_response(req_uid, [], allow=False, message="Kapitan reveal failed")
