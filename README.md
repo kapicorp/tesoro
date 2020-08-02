@@ -142,6 +142,10 @@ tesoro_requests_failed_total | Tesoro failed requests | counter
 kapitan_reveal_requests_total | Kapitan reveal total requests | counter
 kapitan_reveal_requests_failed_total | Kapitan reveal failed requests | counter
 
+## Handling Failure
+
+Since revealing relies on external services (such as Google KMS, AWS KMS, etc...),
+Tesoro will retry up to 3 times should a reveal request fail.
 
 
 ### Local testing

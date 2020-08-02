@@ -1,5 +1,6 @@
 from asyncio import get_running_loop
 from tesoro import REVEALER
+from sys import exc_info
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,9 +25,17 @@ async def run_blocking(func):
     return await loop.run_in_executor(None, func)
 
 
-def kapitan_reveal_json(json_doc):
+def kapitan_reveal_json(json_doc, retries=3):
     "return revealed object, total revealed tags (TODO)"
-    return REVEALER.reveal_obj(json_doc)
+    for retry in range(retries):
+        try:
+            return REVEALER.reveal_obj(json_doc)
+        except Exception as e:
+            exc_type, exc_value, _ = exc_info()
+            if retry + 1 <= retries:
+                logger.debug("Kapitan reveal retry: %d for exception: %s: %s", retry + 1, exc_type, exc_value)
+                continue
+            raise
 
 
 def setup_logging(level=logging.INFO, kapitan_debug=False):
@@ -39,3 +48,7 @@ def setup_logging(level=logging.INFO, kapitan_debug=False):
         format="%(asctime)s %(levelname)-8s %(message)s", level=level, datefmt="%Y-%m-%d %H:%M:%S"
     )
     logging.getLogger("tesoro").setLevel(level)
+
+
+class KapitanRevealFail(Exception):
+    pass

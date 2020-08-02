@@ -7,6 +7,7 @@
       "object":{
          "kind": "obj-here",
          "metadata":{
+            "name": "name-here",
             "labels":{
                "tesoro.kapicorp.com":"enabled"
             }
