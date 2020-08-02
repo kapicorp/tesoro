@@ -31,6 +31,8 @@ async def mutate_handler(request, log_redact_patch=True):
         req_kind = req_json["request"]["kind"]
         req_resource = req_json["request"]["resource"]
         req_obj = req_json["request"]["object"]
+        req_obj_name = req_obj["metadata"]["name"]
+
     except json.decoder.JSONDecodeError:
         TESORO_FAILED_COUNTER.inc()
         return web.Response(status=500, reason="Request not JSON")
@@ -43,10 +45,11 @@ async def mutate_handler(request, log_redact_patch=True):
     if labels.get("tesoro.kapicorp.com", None) == "enabled":
         try:
             logger.debug(
-                "Request Uid: %s Namespace: %s Kind: %s Resource: %s",
+                "Request Uid: %s, Namespace: %s, Kind: %s, Object Name: %s, Resource: %s",
                 req_uid,
                 req_namespace,
                 req_kind,
+                req_obj_name,
                 req_resource,
             )
             req_copy = deepcopy(req_obj)
