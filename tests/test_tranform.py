@@ -18,7 +18,7 @@ class TestPreprare(unittest.TestCase):
             "type": "Opaque",
             "data": {"file1": b64encode(bytes(ref_tag.encode())),},
         }
-        transformations = prepare_obj(k8s_obj)
+        transformations = prepare_obj('request_uid', k8s_obj)
 
         self.assertEqual(transformations, {"Secret": {"data": {"file1": {"encoding": "original"}}}})
         self.assertEqual(k8s_obj["data"]["file1"], ref_tag)
@@ -28,7 +28,7 @@ class TestPreprare(unittest.TestCase):
             "apiVersion": "v1",
             "kind": "NotAsecret",
         }
-        transformations = prepare_obj(k8s_obj)
+        transformations = prepare_obj('request_uid', k8s_obj)
 
         self.assertEqual(transformations, {})
 
@@ -48,7 +48,7 @@ class TestTransform(unittest.TestCase):
             "type": "Opaque",
             "data": {"file1": b64encode(bytes(ref_tag.encode())),},
         }
-        transformations = prepare_obj(k8s_obj)
+        transformations = prepare_obj('request_uid', k8s_obj)
         # reveal base64_ref
         ref_obj = REF_CONTROLLER[ref_tag]
         ref_obj_revealed = ref_obj.reveal()
@@ -71,7 +71,7 @@ class TestTransform(unittest.TestCase):
             "type": "Opaque",
             "data": {"file1": b64encode(bytes(ref_tag.encode())),},
         }
-        transformations = prepare_obj(k8s_obj)
+        transformations = prepare_obj('request_uid', k8s_obj)
         # reveal base64_ref
         ref_obj = REF_CONTROLLER[ref_tag]
         ref_obj_revealed = ref_obj.reveal()
