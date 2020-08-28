@@ -35,17 +35,21 @@ async def mutate_handler(request, log_redact_patch=True):
 
     except json.decoder.JSONDecodeError:
         TESORO_FAILED_COUNTER.inc()
+        logger.error("message=\"Invalid JSON on request\"")
         return web.Response(status=500, reason="Request not JSON")
-    except KeyError:
+    except KeyError as e:
         TESORO_FAILED_COUNTER.inc()
+        logger.error("message=\"Missing JSON objects on request\", request_uid=%s, missing_key=%s", req_uid, e)
         return web.Response(status=500, reason="Invalid JSON request")
 
-    labels = kapicorp_labels(req_obj)
+    labels = kapicorp_labels(req_uid, req_obj)
+    logger.info("message=\"New request\", request_uid=%s, object_name=%s, namespace=%s, kind=%s",
+                req_uid, req_obj_name, req_namespace, req_kind)
 
     if labels.get("tesoro.kapicorp.com", None) == "enabled":
         try:
             logger.debug(
-                "Request Uid: %s, Namespace: %s, Kind: %s, Object Name: %s, Resource: %s",
+                "message=\"Request detail\", request_uid=%s, namespace=%s, kind=\"%s\", object_name=%s, resource=\"%s\"",
                 req_uid,
                 req_namespace,
                 req_kind,
@@ -54,35 +58,38 @@ async def mutate_handler(request, log_redact_patch=True):
             )
             req_copy = deepcopy(req_obj)
 
-            transformations = prepare_obj(req_copy)
-            logger.debug("Tranformations: %s", transformations)
+            transformations = prepare_obj(req_uid, req_copy)
+            logger.debug("message=\"Transformations\", request_uid=%s, transformations=\"%s\"",
+                         req_uid, transformations)
 
-            reveal_req_func = lambda: kapitan_reveal_json(req_copy)
+            reveal_req_func = lambda: kapitan_reveal_json(req_uid, req_copy)
             req_revealed = await run_blocking(reveal_req_func)
             if req_revealed is None:
                 raise KapitanRevealFail("revealed object is None")
 
             transform_obj(req_revealed, transformations)
-            patch = make_patch(req_obj, req_revealed)
+            patch = make_patch(req_uid, req_obj, req_revealed)
             annotate_patch(patch)
             REVEAL_COUNTER.inc()
             if log_redact_patch:
-                logger.debug("Kapitan reveal successful, allowed with patch: %s", redact_patch(patch))
+                logger.debug("message=\"Kapitan reveal successful\", request_uid=%s, patch=\"%s\"", req_uid, redact_patch(patch))
             else:
-                logger.debug("Kapitan reveal successful, allowed with patch: %s", patch)
+                logger.debug("message=\"Kapitan reveal successful\", request_uid=%s, allowed with patch=\"%s\"", req_uid, patch)
+            logger.info("message=\"Kapitan reveal successful\", request_uid=%s", req_uid)
 
             return make_response(req_uid, patch, allow=True)
         except Exception as e:
             exc_type, exc_value, _ = exc_info()
-            logger.debug("Got exception: %s: %s", exc_type, exc_value)
-            logger.debug("Kapitan reveal failed, disallowed")
+            logger.error("message=\"Kapitan reveal failed\", request_uid=%s, exception_type=%s, exception=%s", req_uid, exc_type, exc_value)
             REVEAL_FAILED_COUNTER.inc()
             return make_response(req_uid, [], allow=False, message="Kapitan reveal failed")
     else:
         # not labelled, default allow
+        logger.info('message=\"Tesoro label not found\", request_uid=%s', req_uid)
         return make_response(req_uid, [], allow=True)
 
     TESORO_FAILED_COUNTER.inc()
+    logger.error("message=\"Unknown error\", request_uid=%s", req_uid)
     return web.Response(status=500, reason="Unknown error")
 
 
@@ -99,4 +106,5 @@ def make_response(uid, patch, allow=False, message=""):
     if message:
         response["response"]["status"] = {"message": message}
 
+    logger.debug("message=\"Response Successful\", request_uid=%s, response=\"%s\"", uid, response["response"])
     return web.json_response(response)

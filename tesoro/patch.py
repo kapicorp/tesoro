@@ -29,7 +29,7 @@ def annotate_patch(patch):
         )
 
 
-def make_patch(src_json, dst_json):
+def make_patch(req_uid, src_json, dst_json):
     "returns jsonpatch for diff between src_json and dst_json"
     patch = jsonpatch.make_patch(src_json, dst_json)
     patch = patch.patch
@@ -41,7 +41,7 @@ def make_patch(src_json, dst_json):
     for idx, patch_item in enumerate(patch):
         if patch_item["path"] == last_applied:
             patch.pop(idx)
-            logger.debug("Removed last-applied-configuration annotation from patch")
+            logger.debug("message=\"Removed last-applied-configuration annotation from patch\", req_uid=%s", req_uid)
 
     return patch
 
