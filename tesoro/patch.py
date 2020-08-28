@@ -41,7 +41,9 @@ def make_patch(req_uid, src_json, dst_json):
     for idx, patch_item in enumerate(patch):
         if patch_item["path"] == last_applied:
             patch.pop(idx)
-            logger.debug('message="Removed last-applied-configuration annotation from patch", req_uid=%s', req_uid)
+            logger.debug(
+                'message="Removed last-applied-configuration annotation from patch", req_uid=%s', req_uid
+            )
 
     return patch
 

@@ -43,8 +43,13 @@ async def mutate_handler(request, log_redact_patch=True):
         return web.Response(status=500, reason="Invalid JSON request")
 
     labels = kapicorp_labels(req_uid, req_obj)
-    logger.info('message="New request", request_uid=%s, object_name=%s, namespace=%s, kind=%s',
-                req_uid, req_obj_name, req_namespace, req_kind)
+    logger.info(
+        'message="New request", request_uid=%s, object_name=%s, namespace=%s, kind=%s',
+        req_uid,
+        req_obj_name,
+        req_namespace,
+        req_kind,
+    )
 
     if labels.get("tesoro.kapicorp.com", None) == "enabled":
         try:
@@ -59,8 +64,9 @@ async def mutate_handler(request, log_redact_patch=True):
             req_copy = deepcopy(req_obj)
 
             transformations = prepare_obj(req_uid, req_copy)
-            logger.debug('message="Transformations", request_uid=%s, transformations="%s"',
-                         req_uid, transformations)
+            logger.debug(
+                'message="Transformations", request_uid=%s, transformations="%s"', req_uid, transformations
+            )
 
             reveal_req_func = lambda: kapitan_reveal_json(req_uid, req_copy)
             req_revealed = await run_blocking(reveal_req_func)
@@ -72,15 +78,28 @@ async def mutate_handler(request, log_redact_patch=True):
             annotate_patch(patch)
             REVEAL_COUNTER.inc()
             if log_redact_patch:
-                logger.debug('message="Kapitan reveal successful", request_uid=%s, patch="%s"', req_uid, redact_patch(patch))
+                logger.debug(
+                    'message="Kapitan reveal successful", request_uid=%s, patch="%s"',
+                    req_uid,
+                    redact_patch(patch),
+                )
             else:
-                logger.debug('message="Kapitan reveal successful", request_uid=%s, allowed with patch="%s"', req_uid, patch)
+                logger.debug(
+                    'message="Kapitan reveal successful", request_uid=%s, allowed with patch="%s"',
+                    req_uid,
+                    patch,
+                )
             logger.info('message="Kapitan reveal successful", request_uid=%s', req_uid)
 
             return make_response(req_uid, patch, allow=True)
         except Exception as e:
             exc_type, exc_value, _ = exc_info()
-            logger.error('message="Kapitan reveal failed", request_uid=%s, exception_type=%s, exception=%s', req_uid, exc_type, exc_value)
+            logger.error(
+                'message="Kapitan reveal failed", request_uid=%s, exception_type=%s, exception=%s',
+                req_uid,
+                exc_type,
+                exc_value,
+            )
             REVEAL_FAILED_COUNTER.inc()
             return make_response(req_uid, [], allow=False, message="Kapitan reveal failed")
     else:

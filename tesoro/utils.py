@@ -14,7 +14,7 @@ def kapicorp_labels(req_uid, req_obj):
             if label_key.startswith("tesoro.kapicorp.com"):
                 labels[label_key] = label_value
     except KeyError:
-        logger.error('request_id=%s Tesoro label not found', req_uid)
+        logger.error("request_id=%s Tesoro label not found", req_uid)
         return labels
 
     return labels
@@ -34,9 +34,15 @@ def kapitan_reveal_json(req_uid, json_doc, retries=3):
         except Exception as e:
             exc_type, exc_value, _ = exc_info()
             if retry + 1 <= retries:
-                logger.error('message="Kapitan reveal failed, retrying", request_uid=%s, '
-                             'retry="%d of %d", exception_type=%s, error="%s"',
-                             req_uid, retry + 1, retries, exc_type, exc_value)
+                logger.error(
+                    'message="Kapitan reveal failed, retrying", request_uid=%s, '
+                    'retry="%d of %d", exception_type=%s, error="%s"',
+                    req_uid,
+                    retry + 1,
+                    retries,
+                    exc_type,
+                    exc_value,
+                )
                 continue
             raise
 
