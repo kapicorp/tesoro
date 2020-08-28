@@ -35,21 +35,21 @@ async def mutate_handler(request, log_redact_patch=True):
 
     except json.decoder.JSONDecodeError:
         TESORO_FAILED_COUNTER.inc()
-        logger.error("message=\"Invalid JSON on request\"")
+        logger.error('message="Invalid JSON on request"')
         return web.Response(status=500, reason="Request not JSON")
     except KeyError as e:
         TESORO_FAILED_COUNTER.inc()
-        logger.error("message=\"Missing JSON objects on request\", request_uid=%s, missing_key=%s", req_uid, e)
+        logger.error('message="Missing JSON objects on request", request_uid=%s, missing_key=%s', req_uid, e)
         return web.Response(status=500, reason="Invalid JSON request")
 
     labels = kapicorp_labels(req_uid, req_obj)
-    logger.info("message=\"New request\", request_uid=%s, object_name=%s, namespace=%s, kind=%s",
+    logger.info('message="New request", request_uid=%s, object_name=%s, namespace=%s, kind=%s',
                 req_uid, req_obj_name, req_namespace, req_kind)
 
     if labels.get("tesoro.kapicorp.com", None) == "enabled":
         try:
             logger.debug(
-                "message=\"Request detail\", request_uid=%s, namespace=%s, kind=\"%s\", object_name=%s, resource=\"%s\"",
+                'message="Request detail", request_uid=%s, namespace=%s, kind="%s", object_name=%s, resource="%s"',
                 req_uid,
                 req_namespace,
                 req_kind,
@@ -59,7 +59,7 @@ async def mutate_handler(request, log_redact_patch=True):
             req_copy = deepcopy(req_obj)
 
             transformations = prepare_obj(req_uid, req_copy)
-            logger.debug("message=\"Transformations\", request_uid=%s, transformations=\"%s\"",
+            logger.debug('message="Transformations", request_uid=%s, transformations="%s"',
                          req_uid, transformations)
 
             reveal_req_func = lambda: kapitan_reveal_json(req_uid, req_copy)
@@ -72,24 +72,24 @@ async def mutate_handler(request, log_redact_patch=True):
             annotate_patch(patch)
             REVEAL_COUNTER.inc()
             if log_redact_patch:
-                logger.debug("message=\"Kapitan reveal successful\", request_uid=%s, patch=\"%s\"", req_uid, redact_patch(patch))
+                logger.debug('message="Kapitan reveal successful", request_uid=%s, patch="%s"', req_uid, redact_patch(patch))
             else:
-                logger.debug("message=\"Kapitan reveal successful\", request_uid=%s, allowed with patch=\"%s\"", req_uid, patch)
-            logger.info("message=\"Kapitan reveal successful\", request_uid=%s", req_uid)
+                logger.debug('message="Kapitan reveal successful", request_uid=%s, allowed with patch="%s"', req_uid, patch)
+            logger.info('message="Kapitan reveal successful", request_uid=%s', req_uid)
 
             return make_response(req_uid, patch, allow=True)
         except Exception as e:
             exc_type, exc_value, _ = exc_info()
-            logger.error("message=\"Kapitan reveal failed\", request_uid=%s, exception_type=%s, exception=%s", req_uid, exc_type, exc_value)
+            logger.error('message="Kapitan reveal failed", request_uid=%s, exception_type=%s, exception=%s', req_uid, exc_type, exc_value)
             REVEAL_FAILED_COUNTER.inc()
             return make_response(req_uid, [], allow=False, message="Kapitan reveal failed")
     else:
         # not labelled, default allow
-        logger.info('message=\"Tesoro label not found\", request_uid=%s', req_uid)
+        logger.info('message="Tesoro label not found", request_uid=%s', req_uid)
         return make_response(req_uid, [], allow=True)
 
     TESORO_FAILED_COUNTER.inc()
-    logger.error("message=\"Unknown error\", request_uid=%s", req_uid)
+    logger.error('message="Unknown error", request_uid=%s', req_uid)
     return web.Response(status=500, reason="Unknown error")
 
 
@@ -106,5 +106,5 @@ def make_response(uid, patch, allow=False, message=""):
     if message:
         response["response"]["status"] = {"message": message}
 
-    logger.debug("message=\"Response Successful\", request_uid=%s, response=\"%s\"", uid, response["response"])
+    logger.debug('message="Response Successful", request_uid=%s, response="%s"', uid, response["response"])
     return web.json_response(response)

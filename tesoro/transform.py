@@ -27,7 +27,7 @@ def prepare_obj(req_uid, req_obj):
                 continue  # this is not a ref, do nothing
             else:
                 logger.debug(
-                    "message=\"Secret transformation\", request_uid=%s, secret_name=%s, decoded_ref=%s",
+                    'message="Secret transformation", request_uid=%s, secret_name=%s, decoded_ref=%s',
                     req_uid, secret_name, decoded_ref
                 )
                 # peek and register ref's encoding
