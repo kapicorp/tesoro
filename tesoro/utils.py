@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def kapicorp_labels(req_obj):
+def kapicorp_labels(req_uid, req_obj):
     "returns kapicorp labels dict for req_obj"
     labels = {}
     try:
@@ -14,6 +14,7 @@ def kapicorp_labels(req_obj):
             if label_key.startswith("tesoro.kapicorp.com"):
                 labels[label_key] = label_value
     except KeyError:
+        logger.debug('message="Tesoro label not found", request_uid=%s', req_uid)
         return labels
 
     return labels
@@ -25,7 +26,7 @@ async def run_blocking(func):
     return await loop.run_in_executor(None, func)
 
 
-def kapitan_reveal_json(json_doc, retries=3):
+def kapitan_reveal_json(req_uid, json_doc, retries=3):
     "return revealed object, total revealed tags (TODO)"
     for retry in range(retries):
         try:
@@ -33,7 +34,15 @@ def kapitan_reveal_json(json_doc, retries=3):
         except Exception as e:
             exc_type, exc_value, _ = exc_info()
             if retry + 1 <= retries:
-                logger.debug("Kapitan reveal retry: %d for exception: %s: %s", retry + 1, exc_type, exc_value)
+                logger.error(
+                    'message="Kapitan reveal failed, retrying", request_uid=%s, '
+                    'retry="%d of %d", exception_type=%s, error="%s"',
+                    req_uid,
+                    retry + 1,
+                    retries,
+                    exc_type,
+                    exc_value,
+                )
                 continue
             raise
 
