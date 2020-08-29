@@ -14,7 +14,7 @@ def kapicorp_labels(req_uid, req_obj):
             if label_key.startswith("tesoro.kapicorp.com"):
                 labels[label_key] = label_value
     except KeyError:
-        logger.error("request_id=%s Tesoro label not found", req_uid)
+        logger.debug('message="Tesoro label not found", request_uid=%s', req_uid)
         return labels
 
     return labels

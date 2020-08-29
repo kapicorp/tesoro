@@ -95,7 +95,7 @@ async def mutate_handler(request, log_redact_patch=True):
         except Exception as e:
             exc_type, exc_value, _ = exc_info()
             logger.error(
-                'message="Kapitan reveal failed", request_uid=%s, exception_type=%s, exception=%s',
+                'message="Kapitan reveal failed", request_uid=%s, exception_type=%s, error=%s',
                 req_uid,
                 exc_type,
                 exc_value,
