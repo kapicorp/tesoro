@@ -1,4 +1,5 @@
 from asyncio import get_running_loop
+import concurrent.futures
 from tesoro import REVEALER
 from sys import exc_info
 import logging
@@ -23,7 +24,8 @@ def kapicorp_labels(req_uid, req_obj):
 async def run_blocking(func):
     "run blocking funcion in async executor"
     loop = get_running_loop()
-    return await loop.run_in_executor(None, func)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        return await loop.run_in_executor(pool, func)
 
 
 def kapitan_reveal_json(req_uid, json_doc, retries=3):
