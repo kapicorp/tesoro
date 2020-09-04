@@ -22,10 +22,9 @@ def kapicorp_labels(req_uid, req_obj):
 
 
 async def run_blocking(func):
-    "run blocking funcion in async executor"
+    "run blocking function in async executor"
     loop = get_running_loop()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-        return await loop.run_in_executor(pool, func)
+    return await loop.run_in_executor(None, func)
 
 
 def kapitan_reveal_json(req_uid, json_doc, retries=3):

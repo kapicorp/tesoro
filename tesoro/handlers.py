@@ -125,5 +125,6 @@ def make_response(uid, patch, allow=False, message=""):
     if message:
         response["response"]["status"] = {"message": message}
 
+    # TODO this leaks unredacted patch when --verbose is on (remove response?)
     logger.debug('message="Response Successful", request_uid=%s, response="%s"', uid, response["response"])
     return web.json_response(response)

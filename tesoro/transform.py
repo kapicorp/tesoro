@@ -3,8 +3,8 @@ import re
 from base64 import b64decode, b64encode
 
 from kapitan.refs.base import REF_TOKEN_TAG_PATTERN
-
 from tesoro import REF_CONTROLLER
+
 
 logger = logging.getLogger(__name__)
 
