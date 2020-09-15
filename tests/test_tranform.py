@@ -14,14 +14,9 @@ class TestPreprare(unittest.TestCase):
         k8s_obj = {
             "apiVersion": "v1",
             "kind": "Secret",
-            "metadata": {
-                "name": "some-secret",
-                "labels": {"tesoro.kapicorp.com": "enabled"},
-            },
+            "metadata": {"name": "some-secret", "labels": {"tesoro.kapicorp.com": "enabled"},},
             "type": "Opaque",
-            "data": {
-                "file1": b64encode(bytes(ref_tag.encode())),
-            },
+            "data": {"file1": b64encode(bytes(ref_tag.encode())),},
         }
         transformations = prepare_obj("request_uid", k8s_obj)
 
@@ -49,14 +44,9 @@ class TestTransform(unittest.TestCase):
         k8s_obj = {
             "apiVersion": "v1",
             "kind": "Secret",
-            "metadata": {
-                "name": "some-secret",
-                "labels": {"tesoro.kapicorp.com": "enabled"},
-            },
+            "metadata": {"name": "some-secret", "labels": {"tesoro.kapicorp.com": "enabled"},},
             "type": "Opaque",
-            "data": {
-                "file1": b64encode(bytes(ref_tag.encode())),
-            },
+            "data": {"file1": b64encode(bytes(ref_tag.encode())),},
         }
         transformations = prepare_obj("request_uid", k8s_obj)
         # reveal base64_ref
@@ -77,14 +67,9 @@ class TestTransform(unittest.TestCase):
         k8s_obj = {
             "apiVersion": "v1",
             "kind": "Secret",
-            "metadata": {
-                "name": "some-secret",
-                "labels": {"tesoro.kapicorp.com": "enabled"},
-            },
+            "metadata": {"name": "some-secret", "labels": {"tesoro.kapicorp.com": "enabled"},},
             "type": "Opaque",
-            "data": {
-                "file1": b64encode(bytes(ref_tag.encode())),
-            },
+            "data": {"file1": b64encode(bytes(ref_tag.encode())),},
         }
         transformations = prepare_obj("request_uid", k8s_obj)
         # reveal base64_ref

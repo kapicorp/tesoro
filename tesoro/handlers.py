@@ -16,7 +16,7 @@ async def healthz_handler(request):
     return web.Response(status=200, text="ok")
 
 
-async def mutate_handler(request, log_redact_patch=True):
+async def mutate_handler(request, reveal_lock=None, log_redact_patch=True):
     TESORO_COUNTER.inc()
     req_obj = {}
     req_uid = None
@@ -69,7 +69,7 @@ async def mutate_handler(request, log_redact_patch=True):
             )
 
             reveal_req_func = lambda: kapitan_reveal_json(req_uid, req_copy)
-            req_revealed = await run_blocking(reveal_req_func)
+            req_revealed = await run_blocking(reveal_req_func, lock=reveal_lock)
             if req_revealed is None:
                 raise KapitanRevealFail("revealed object is None")
 
@@ -125,5 +125,6 @@ def make_response(uid, patch, allow=False, message=""):
     if message:
         response["response"]["status"] = {"message": message}
 
+    # TODO this leaks unredacted patch when --verbose is on (remove response?)
     logger.debug('message="Response Successful", request_uid=%s, response="%s"', uid, response["response"])
     return web.json_response(response)

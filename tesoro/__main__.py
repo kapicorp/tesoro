@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from asyncio import Lock
 import argparse
 import logging
 import ssl
@@ -35,11 +36,15 @@ if args.verbose:
     setup_logging(level=logging.DEBUG, kapitan_debug=args.verbose_kapitan)
     logger.debug("Logging level set to DEBUG")
 
+reveal_lock = Lock()
 app = web.Application()
 app.add_routes(
     [
         web.get("/healthz", healthz_handler),
-        web.post("/mutate", partial(mutate_handler, log_redact_patch=(not args.verbose_no_redact))),
+        web.post(
+            "/mutate",
+            partial(mutate_handler, reveal_lock=reveal_lock, log_redact_patch=(not args.verbose_no_redact)),
+        ),
     ]
 )
 
