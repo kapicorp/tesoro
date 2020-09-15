@@ -1,6 +1,7 @@
 from asyncio import get_running_loop
 import concurrent.futures
 from tesoro import REVEALER
+from tesoro.metrics import REVEAL_RETRY_COUNTER
 from sys import exc_info
 import logging
 
@@ -21,10 +22,16 @@ def kapicorp_labels(req_uid, req_obj):
     return labels
 
 
-async def run_blocking(func):
+async def run_blocking(func, lock=None):
     "run blocking function in async executor"
     loop = get_running_loop()
-    return await loop.run_in_executor(None, func)
+    retval = None
+    if lock:
+        async with lock:
+            retval = await loop.run_in_executor(None, func)
+        return retval
+    else:
+        return await loop.run_in_executor(None, func)
 
 
 def kapitan_reveal_json(req_uid, json_doc, retries=3):
@@ -44,6 +51,7 @@ def kapitan_reveal_json(req_uid, json_doc, retries=3):
                     exc_type,
                     exc_value,
                 )
+                REVEAL_RETRY_COUNTER.inc()
                 continue
             raise
 
