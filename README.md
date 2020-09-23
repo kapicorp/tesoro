@@ -141,6 +141,7 @@ tesoro_requests_total | Tesoro total requests | counter
 tesoro_requests_failed_total | Tesoro failed requests | counter
 kapitan_reveal_requests_total | Kapitan reveal total requests | counter
 kapitan_reveal_requests_failed_total | Kapitan reveal failed requests | counter
+kapitan_reveal_retry_requests | Kapitan reveal retry requests | counter
 
 ## Handling Failure
 
