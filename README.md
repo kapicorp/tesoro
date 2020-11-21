@@ -73,31 +73,24 @@ Tesoro is a Kubernetes Admission Controller [Mutating Webhook](https://kubernete
 
 You'll find the predefined example config in the [k8s/](./k8s) directory. Please make sure you read about setting up Mutating Webhooks [here](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#configure-admission-webhooks-on-the-fly)!
 
-#### 1 - ClusterRole and ClusterRoleBinding
-
-```shell
-$ kubectl apply -f k8s/clusterrole.yaml
-$ kubectl apply -f k8s/clusterrolebinding.yaml
-```
-
-#### 2 - Tesoro Namespace
+#### 1 - Tesoro Namespace
 
 We will be running the webhook in the `tesoro` namespace
 
 ```shell
-$ kubectl apply -f k8s/tesoro_namespace.yaml
+$ kubectl apply -f k8s/tesoro-namespace.yaml
 ```
 
-#### 3 - Tesoro Webhook Config & Certs
+#### 2 - Tesoro Config & Certs
 
-For convenience, you'll find valid certificates in `tesoro_mutatingwebhook.yaml` and `tesoro_secret.yaml` for testing purposes only.
+For convenience, this setup includes snake-oil certificates for EVALUATION PURPOSES ONLY.
 
 Security advice: FOR PROD, PLEASE SETUP YOUR OWN.
 
 ```shell
-$ kubectl -n tesoro apply -f k8s/tesoro_secret.yaml
-$ kubectl -n tesoro apply -f k8s/tesoro_service.yaml
-$ kubectl -n tesoro apply -f k8s/tesoro_deployment.yaml
+$ kubectl -n tesoro apply -f k8s/tesoro-secret.yaml
+$ kubectl -n tesoro apply -f k8s/tesoro-sa.yaml
+$ kubectl -n tesoro apply -f k8s/tesoro-bundle.yaml
 ```
 
 Verify the tesoro pod is up and running:
@@ -105,16 +98,10 @@ Verify the tesoro pod is up and running:
 ```shell
 $ kubectl -n tesoro get pods
 NAME                                           READY   STATUS    RESTARTS   AGE
-tesoro-admission-controller-584b9d87c6-p69bx   1/1     Running   0          1m
+tesoro-584b9d87c6-p69bx                        1/1     Running   0          1m
 ```
 
-And finally apply the MutatingWebhookConfiguration:
-
-```shell
-$ kubectl apply -f k8s/tesoro_mutatingwebhook.yaml
-```
-
-#### 4 - Try a Kubernetes Manifest with Secret Refs
+#### 3 - Try a Kubernetes Manifest with Secret Refs
 
 This manifest with a valid ref, should work:
 
@@ -128,7 +115,7 @@ The following manifest with a bogus ref, should fail:
 
 ```shell
 kubectl apply -f tests/k8s/nginx_deployment_bad.yml
-Error from server: error when creating "nginx_deployment_bad.yml": admission webhook "tesoro-admission-controller.tesoro.svc" denied the request: Kapitan reveal failed
+Error from server: error when creating "nginx_deployment_bad.yml": admission webhook "tesoro.tesoro.svc" denied the request: Kapitan reveal failed
 ```
 
 ## Monitoring
