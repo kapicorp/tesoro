@@ -38,6 +38,17 @@ spec:
             - --port=443
             - --cert-file=/certs/cert.pem
             - --key-file=/certs/priv.key
+          env:
+          {{- range $index, $value := .Values.env }}
+            - name: {{ $index }}
+              value: {{ $value | quote }}
+          {{- end }}
+          envFrom:
+          {{- range .Values.secrets }}
+            - secretRef:
+                name: {{.}}
+                optional: false
+          {{- end }}
           {{- with .Values.probes }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
