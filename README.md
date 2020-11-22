@@ -69,6 +69,7 @@ You can also setup Prometheus monitoring for this. See [Monitoring](https://gith
 
 Tesoro is a Kubernetes Admission Controller [Mutating Webhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook), which means that you'll need at minimum a Kubernetes v1.9 cluster.
 
+
 ### Example Kubernetes Config
 
 You'll find the predefined example config in the [k8s/](./k8s) directory. Please make sure you read about setting up Mutating Webhooks [here](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#configure-admission-webhooks-on-the-fly)!
@@ -129,6 +130,49 @@ The following manifest with a bogus ref, should fail:
 ```shell
 kubectl apply -f tests/k8s/nginx_deployment_bad.yml
 Error from server: error when creating "nginx_deployment_bad.yml": admission webhook "tesoro-admission-controller.tesoro.svc" denied the request: Kapitan reveal failed
+```
+
+### Helm chart
+
+This repository includes a helm chart which offers an alternative way to install Tesoro
+
+```
+kubectl create ns tesoro
+helm install tesoro chart -n tesoro
+```
+
+#### Vault support
+
+Login to vault to create a token for use by Tesoro
+
+```
+vault login -no-print -method=github token=XXXXXXXXXXX
+```
+
+##### Option 1: Environment variable
+
+Specify the secret as an environment variable
+
+```
+helm install tesoro chart -n tesoro --set env.VAULT_TOKEN=$(cat ~/.vault-token)
+```
+
+**Note:**
+
+This option trades security for a simpler upgrade mechanism when the token expires:
+
+```
+vault login -no-print -method=github token=XXXXXXXXXXX
+helm upgrade tesoro chart -n tesoro --set env.VAULT_TOKEN=$(cat ~/.vault-token)
+```
+
+##### Option 2: Secret
+
+Alternatively store the credential in a secret
+
+```
+kubectl create secret generic vault-creds --from-literal=VAULT_TOKEN=$(cat ~/.vault-token) -n tesoro
+helm upgrade tesoro chart --set secrets[0]=vault-creds -n tesoro
 ```
 
 ## Monitoring
