@@ -143,32 +143,31 @@ helm install tesoro chart -n tesoro
 
 #### Vault support
 
-Login to vault to create a token for use by Tesoro
+In order to support Vault references Tesoro will need a VAULT token, this can be created by logging into vault using your defined auth backend.
+This example uses github:
 
 ```
 vault login -no-print -method=github token=XXXXXXXXXXX
 ```
 
-##### Option 1: Environment variable
-
-Specify the secret as an environment variable
+The helm chart is installed specifying the addition of a VAULT_TOKEN 
 
 ```
 helm install tesoro chart -n tesoro --set env.VAULT_TOKEN=$(cat ~/.vault-token)
 ```
 
-**Note:**
+##### Upgrading the token
 
-This option trades security for a simpler upgrade mechanism when the token expires:
+Should the token expire, it can be refreshed as follows:
 
 ```
 vault login -no-print -method=github token=XXXXXXXXXXX
 helm upgrade tesoro chart -n tesoro --set env.VAULT_TOKEN=$(cat ~/.vault-token)
 ```
 
-##### Option 2: Secret
+##### Using a secret to store Vault token
 
-Alternatively store the credential in a secret
+A more secure option is to save the token as a secret
 
 ```
 kubectl create secret generic vault-creds --from-literal=VAULT_TOKEN=$(cat ~/.vault-token) -n tesoro
