@@ -171,7 +171,7 @@ A more secure option is to save the token as a secret
 
 ```
 kubectl create secret generic vault-creds --from-literal=VAULT_TOKEN=$(cat ~/.vault-token) -n tesoro
-helm upgrade tesoro chart --set secrets[0]=vault-creds -n tesoro
+helm install tesoro chart --set secrets[0]=vault-creds -n tesoro
 ```
 
 ## Monitoring
