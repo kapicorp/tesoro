@@ -3,13 +3,13 @@ import re
 from base64 import b64decode, b64encode
 
 from kapitan.refs.base import REF_TOKEN_TAG_PATTERN
-
 from tesoro import REF_CONTROLLER
+
 
 logger = logging.getLogger(__name__)
 
 
-def prepare_obj(req_obj):
+def prepare_obj(req_uid, req_obj):
     """
     updates object and returns transformation operations
     on specific object kinds to perform post reveal
@@ -27,7 +27,10 @@ def prepare_obj(req_obj):
                 continue  # this is not a ref, do nothing
             else:
                 logger.debug(
-                    "Secret transformation: secret name: %s decoded_ref: %s", secret_name, decoded_ref
+                    'message="Secret transformation", request_uid=%s, secret_name=%s, decoded_ref=%s',
+                    req_uid,
+                    secret_name,
+                    decoded_ref,
                 )
                 # peek and register ref's encoding
                 ref_obj = REF_CONTROLLER[decoded_ref]

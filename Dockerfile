@@ -1,4 +1,4 @@
-FROM deepmind/kapitan:0.28
+FROM deepmind/kapitan:0.29
 
 USER root
 WORKDIR /opt/venv/

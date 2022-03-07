@@ -69,6 +69,7 @@ You can also setup Prometheus monitoring for this. See [Monitoring](https://gith
 
 Tesoro is a Kubernetes Admission Controller [Mutating Webhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook), which means that you'll need at minimum a Kubernetes v1.9 cluster.
 
+
 ### Example Kubernetes Config
 
 You'll find the predefined example config in the [k8s/](./k8s) directory. Please make sure you read about setting up Mutating Webhooks [here](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#configure-admission-webhooks-on-the-fly)!
@@ -131,6 +132,48 @@ kubectl apply -f tests/k8s/nginx_deployment_bad.yml
 Error from server: error when creating "nginx_deployment_bad.yml": admission webhook "tesoro-admission-controller.tesoro.svc" denied the request: Kapitan reveal failed
 ```
 
+### Helm chart
+
+This repository includes a helm chart which offers an alternative way to install Tesoro
+
+```
+kubectl create ns tesoro
+helm install tesoro chart -n tesoro
+```
+
+#### Vault support
+
+In order to support Vault references Tesoro will need a VAULT token, this can be created by logging into vault using your defined auth backend.
+This example uses github:
+
+```
+vault login -no-print -method=github token=XXXXXXXXXXX
+```
+
+The helm chart is installed specifying the addition of a VAULT_TOKEN 
+
+```
+helm install tesoro chart -n tesoro --set env.VAULT_TOKEN=$(cat ~/.vault-token)
+```
+
+##### Upgrading the token
+
+Should the token expire, it can be refreshed as follows:
+
+```
+vault login -no-print -method=github token=XXXXXXXXXXX
+helm upgrade tesoro chart -n tesoro --set env.VAULT_TOKEN=$(cat ~/.vault-token)
+```
+
+##### Using a secret to store Vault token
+
+A more secure option is to save the token as a secret
+
+```
+kubectl create secret generic vault-creds --from-literal=VAULT_TOKEN=$(cat ~/.vault-token) -n tesoro
+helm install tesoro chart --set secrets[0]=vault-creds -n tesoro
+```
+
 ## Monitoring
 
 Tesoro exposes a Prometheus endpoint (by default on port 9095) and the following metrics:
@@ -141,9 +184,11 @@ tesoro_requests_total | Tesoro total requests | counter
 tesoro_requests_failed_total | Tesoro failed requests | counter
 kapitan_reveal_requests_total | Kapitan reveal total requests | counter
 kapitan_reveal_requests_failed_total | Kapitan reveal failed requests | counter
+kapitan_reveal_retry_requests | Kapitan reveal retry requests | counter
 
 ## Handling Failure
 
+## Handling Failure
 Since revealing relies on external services (such as Google KMS, AWS KMS, etc...),
 Tesoro will retry up to 3 times should a reveal request fail.
 

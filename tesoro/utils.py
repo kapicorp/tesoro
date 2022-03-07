@@ -1,12 +1,14 @@
 from asyncio import get_running_loop
+import concurrent.futures
 from tesoro import REVEALER
+from tesoro.metrics import REVEAL_RETRY_COUNTER
 from sys import exc_info
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def kapicorp_labels(req_obj):
+def kapicorp_labels(req_uid, req_obj):
     "returns kapicorp labels dict for req_obj"
     labels = {}
     try:
@@ -14,18 +16,25 @@ def kapicorp_labels(req_obj):
             if label_key.startswith("tesoro.kapicorp.com"):
                 labels[label_key] = label_value
     except KeyError:
+        logger.debug('message="Tesoro label not found", request_uid=%s', req_uid)
         return labels
 
     return labels
 
 
-async def run_blocking(func):
-    "run blocking funcion in async executor"
+async def run_blocking(func, lock=None):
+    "run blocking function in async executor"
     loop = get_running_loop()
-    return await loop.run_in_executor(None, func)
+    retval = None
+    if lock:
+        async with lock:
+            retval = await loop.run_in_executor(None, func)
+        return retval
+    else:
+        return await loop.run_in_executor(None, func)
 
 
-def kapitan_reveal_json(json_doc, retries=3):
+def kapitan_reveal_json(req_uid, json_doc, retries=3):
     "return revealed object, total revealed tags (TODO)"
     for retry in range(retries):
         try:
