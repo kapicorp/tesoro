@@ -1,0 +1,68 @@
+---
+kind: pipeline
+name: Build and Push on branch
+
+platform:
+  os: linux
+  arch: amd64
+
+clone:
+  depth: 1
+
+trigger:
+  event:
+    - push # only deploy when building branches, not tags
+  branch:
+      exclude:
+      - master
+
+steps:
+- name: tesoro-dev
+  image: plugins/gcr
+  settings:
+    cache_from: eu.gcr.io/antha-images/tesoro:latest
+    dockerfile: Dockerfile
+    json_key:
+      from_secret: google_credentials
+    registry: eu.gcr.io
+    repo: eu.gcr.io/antha-images/tesoro
+    tags:
+    - ${DRONE_COMMIT_SHA}
+
+image_pull_secrets:
+- dockerconfigjson
+
+---
+kind: pipeline
+name: Build and Push on master
+
+platform:
+  os: linux
+  arch: amd64
+
+clone:
+  depth: 1
+
+trigger:
+  event:
+    - push
+  branch:
+      - master
+
+steps:
+- name: tesoro-dev
+  image: plugins/gcr
+  settings:
+    cache_from: eu.gcr.io/antha-images/tesoro:latest
+    dockerfile: Dockerfile
+    json_key:
+      from_secret: google_credentials
+    registry: eu.gcr.io
+    repo: eu.gcr.io/antha-images/tesoro
+    tags:
+    - latest
+    - ${DRONE_COMMIT_SHA}
+
+image_pull_secrets:
+- dockerconfigjson
+...
