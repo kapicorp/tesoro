@@ -50,7 +50,7 @@ trigger:
       - master
 
 steps:
-- name: tesoro-dev
+- name: tesoro
   image: plugins/gcr
   settings:
     cache_from: eu.gcr.io/antha-images/tesoro:latest
