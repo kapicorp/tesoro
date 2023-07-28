@@ -1,0 +1,41 @@
+name: Build and push Docker image
+
+on:
+  workflow_call:
+
+
+jobs:
+  build-tesoro-image:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 #v3.5.3
+        # SETUP GCLOUD ONLY ON MAIN BRANCH
+      - name: Set-up GCloud
+        uses: google-github-actions/setup-gcloud@e30db14379863a8c79331b04a9969f4c1e225e0b #v1.1.1
+        if: github.ref_name == 'master'
+        # LOGIN TO GCR ONLY ON MAIN BRANCH
+      - name: Log-in to GCR
+        run: gcloud auth configure-docker eu.gcr.io
+        if: github.ref_name == 'master'
+      - name: Set-up docker
+        uses: docker/setup-buildx-action@ecf95283f03858871ff00b787d79c419715afc34 #v2.7.0
+      - name: Build and push image
+        uses: docker/build-push-action@2eb1c1961a95fc15694676618e422e8ba1d63825 #v4.1.1
+        with:
+          file: ./Dockerfile
+          push: ${{ github.ref_name == 'master' }} # push on master
+          load: ${{ github.ref_name != 'master' }} # load when not on master
+          tags: eu.gcr.io/antha-images/tesoro:${{ github.sha }}-gha,eu.gcr.io/antha-images/tesoro:latest
+
+#      - name: Notify when not success
+#        if: '!success()'
+#        uses: ./.github/actions/slack-notifier
+#        with:
+#          status: ${{ job.status }}
+#          component-name: ${{ github.job }}
+#          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_WORKFLOW_STATUS_NOTIFICATION_URL }}
+    timeout-minutes: 15

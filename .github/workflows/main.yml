@@ -1,0 +1,18 @@
+name: Tesoro build and test
+
+on:
+  push:
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+
+#  tesoro-tests:
+#    if: github.ref_name != 'main'
+#    uses: ./.github/workflows/test.yml
+
+  tesoro-build:
+    uses: ./.github/workflows/build.yml
+
